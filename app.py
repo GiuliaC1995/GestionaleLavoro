@@ -17,9 +17,12 @@ def connect_gsheet(sheet_name, worksheet=0):
         "https://www.googleapis.com/auth/drive.file",
         "https://www.googleapis.com/auth/drive",
     ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, scope)
+    # 🔑 Legge le credenziali dai secrets di Streamlit
+    creds_dict = st.secrets["google"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     return client.open(sheet_name).get_worksheet(worksheet)
+
 
 def load_data(sheet):
     data = sheet.get_all_records()
