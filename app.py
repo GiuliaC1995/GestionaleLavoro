@@ -379,10 +379,76 @@ if st.session_state.ruolo == "utente":
 # Area CAPO
 # =========================
 elif st.session_state.ruolo == "capo":
-    st.subheader("Resoconto completo")
-    if not st.session_state.df_att.empty:
-        st.dataframe(st.session_state.df_att.sort_values("Data", ascending=False))
-        grafico = st.session_state.df_att.groupby("NomeUtente")["Attivita"].count()
-        st.bar_chart(grafico)
-    else:
+    st.subheader("📊 Resoconto completo (Admin)")
+
+    df_all = st.session_state.df_att.copy()
+
+    if df_all.empty:
         st.info("Nessuna attività registrata dagli utenti.")
+    else:
+        # Converto la colonna Data
+        if not pd.api.types.is_datetime64_any_dtype(df_all["Data"]):
+            df_all["Data"] = pd.to_datetime(df_all["Data"], errors="coerce")
+
+        # --- Filtri dinamici ---
+        st.markdown("### 🔍 Filtri")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            utenti_sel = st.multiselect("Utenti", sorted(df_all["NomeUtente"].unique()), default=list(df_all["NomeUtente"].unique()))
+        with col2:
+            macro_sel = st.multiselect("MacroAttività", sorted(df_all["MacroAttivita"].dropna().unique()), default=list(df_all["MacroAttivita"].dropna().unique()))
+        with col3:
+            data_min = df_all["Data"].dropna().min().date()
+            data_max = df_all["Data"].dropna().max().date()
+            start_date = st.date_input("Da", data_min)
+            end_date = st.date_input("A", data_max)
+
+        df_filtrato = df_all[
+            (df_all["NomeUtente"].isin(utenti_sel))
+            & (df_all["MacroAttivita"].isin(macro_sel))
+            & (df_all["Data"].dt.date >= start_date)
+            & (df_all["Data"].dt.date <= end_date)
+        ]
+
+        if df_filtrato.empty:
+            st.warning("⚠️ Nessun dato corrispondente ai filtri selezionati.")
+        else:
+            # --- KPI globali ---
+            st.markdown("### 📌 Indicatori globali")
+            tot_ore = df_filtrato["Ore"].fillna(0).sum()
+            tot_min = df_filtrato["Minuti"].fillna(0).sum()
+            tot_ore_eq = tot_ore + (tot_min/60)
+            tot_campioni = df_filtrato["NumCampioni"].fillna(0).sum()
+            tot_referti = df_filtrato["NumReferti"].fillna(0).sum()
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("⏱️ Ore totali", f"{tot_ore_eq:.1f}")
+            c2.metric("🧪 Campioni", int(tot_campioni))
+            c3.metric("📄 Referti", int(tot_referti))
+
+            # --- Tabella dati filtrati ---
+            st.markdown("### 📑 Tabella dati filtrati")
+            st.dataframe(df_filtrato.sort_values("Data", ascending=False))
+
+            # --- Grafici ---
+            st.markdown("### 📈 Grafici")
+
+            colA, colB = st.columns(2)
+
+            with colA:
+                st.markdown("**Ore totali per utente**")
+                ore_user = df_filtrato.groupby("NomeUtente")["Ore"].sum().sort_values(ascending=False)
+                if not ore_user.empty:
+                    st.bar_chart(ore_user)
+
+            with colB:
+                st.markdown("**Ore per MacroAttività**")
+                ore_macro = df_filtrato.groupby("MacroAttivita")["Ore"].sum().sort_values(ascending=False)
+                if not ore_macro.empty:
+                    st.bar_chart(ore_macro)
+
+            st.markdown("**Campioni e Referti per utente**")
+            stats = df_filtrato.groupby("NomeUtente")[["NumCampioni","NumReferti"]].sum().fillna(0)
+            st.bar_chart(stats)
+
+
