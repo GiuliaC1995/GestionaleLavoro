@@ -4,9 +4,9 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# =========================
+# =====================================
 # Config Google Sheets
-# =========================
+# =====================================
 SHEET_NAME = "GestionaleLavoro"   # <-- nome del tuo Google Sheet
 
 def connect_gsheet(sheet_name, worksheet=0):
@@ -53,9 +53,9 @@ def sync_now():
     except Exception as e:
         st.error(f"❌ Errore sincronizzazione: {e}")
 
-# =========================
-# Dati utenti (login)
-# =========================
+# =====================================
+# Dati utenti (login demo)
+# =====================================
 utenti_data = {
     "NomeUtente": ["giulia","marco","anna","prof"],
     "Password": ["123","123","123","prof123"],
@@ -63,9 +63,9 @@ utenti_data = {
 }
 df_utenti = pd.DataFrame(utenti_data)
 
-# =========================
+# =====================================
 # Dizionario Macro/Tipologia/Attività
-# =========================
+# =====================================
 macro_tipologia_attivita = {
     "AGENDA": {
         "Gestione agenda appuntamenti e telefono": [
@@ -162,9 +162,9 @@ macro_tipologia_attivita = {
     }
 }
 
-# =========================
+# =====================================
 # Stato sessione & Login utils
-# =========================
+# =====================================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
@@ -176,9 +176,9 @@ def login(username, password):
         return user.iloc[0]["Ruolo"]
     return None
 
-# =========================
+# =====================================
 # Connessione e Cache iniziale (una sola volta)
-# =========================
+# =====================================
 if "sheet" not in st.session_state:
     try:
         st.session_state.sheet = connect_gsheet(SHEET_NAME)
@@ -189,12 +189,11 @@ if "sheet" not in st.session_state:
 if "df_att" not in st.session_state:
     st.session_state.df_att = load_data(st.session_state.sheet)
 
-# =========================
-# UI
-# =========================
+# =====================================
+# UI - Titolo e Login
+# =====================================
 st.title("📊 Gestionale Lavoro")
 
-# --- LOGIN ---
 if not st.session_state.logged_in:
     st.subheader("Login")
     username = st.text_input("Nome utente")
@@ -205,15 +204,18 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.session_state.username = username
             st.session_state.ruolo = ruolo
+            st.experimental_rerun()
         else:
             st.error("Nome utente o password errati")
     st.stop()
 
-# --- Contenuto principale ---
-st.sidebar.write(f"Benvenuto, {st.session_state.username} ({st.session_state.ruolo})")
-if st.sidebar.button("Sincronizza adesso"):
+# =====================================
+# Sidebar: info utente e azioni
+# =====================================
+st.sidebar.write(f"Benvenuto, **{st.session_state.username}** ({st.session_state.ruolo})")
+if st.sidebar.button("🔄 Sincronizza adesso"):
     sync_now()
-if st.sidebar.button("Logout"):
+if st.sidebar.button("🚪 Logout"):
     try:
         sync_now()
     except:
@@ -223,295 +225,266 @@ if st.sidebar.button("Logout"):
     st.session_state.ruolo = ""
     st.experimental_rerun()
 
-# =========================
-# Area UTENTE
-# =========================
+# =====================================
+# Navigazione per ruolo
+# =====================================
 if st.session_state.ruolo == "utente":
-    st.subheader("Le mie attività")
-
-    # --- INSERIMENTO NUOVA ATTIVITÀ ---
-    st.markdown("---")
-    st.subheader("Inserisci nuova attività")
-
-    # MacroAttività
-    macro_tmp = st.selectbox(
-        "MacroAttività",
-        ["-- Seleziona --"] + list(macro_tipologia_attivita.keys()),
-        index=0,
-        key="macro_form_tmp"
+    # Menu utente
+    scelta_pagina = st.sidebar.radio(
+        "📌 Menu utente",
+        ["➕ Inserisci attività", "✏️ Modifica attività", "📑 Elenco attività", "📊 Riepilogo e Grafici"]
     )
-    if macro_tmp == "-- Seleziona --":
-        macro_tmp = None
 
-    # Tipologia
-    tipologie_tmp = list(macro_tipologia_attivita.get(macro_tmp, {}).keys()) if macro_tmp else []
-    tipologia_tmp = st.selectbox(
-        "Tipologia",
-        ["-- Seleziona --"] + tipologie_tmp if tipologie_tmp else ["-- Seleziona --"],
-        index=0,
-        key="tipologia_form_tmp"
-    )
-    if tipologia_tmp == "-- Seleziona --":
-        tipologia_tmp = None
+    # ---------- INSERISCI ----------
+    if scelta_pagina == "➕ Inserisci attività":
+        st.subheader("➕ Inserisci nuova attività")
 
-    # Attività
-    attivita_list_tmp = macro_tipologia_attivita.get(macro_tmp, {}).get(tipologia_tmp, []) if tipologia_tmp else []
-    attivita_tmp = st.selectbox(
-        "Attività",
-        ["-- Seleziona --"] + attivita_list_tmp if attivita_list_tmp else ["-- Seleziona --"],
-        index=0,
-        key="attivita_form_tmp"
-    )
-    if attivita_tmp == "-- Seleziona --":
-        attivita_tmp = None
+        # Macro → Tipologia → Attività
+        macro_tmp = st.selectbox("MacroAttività", ["-- Seleziona --"] + list(macro_tipologia_attivita.keys()), key="macro_form_tmp")
+        if macro_tmp == "-- Seleziona --":
+            macro_tmp = None
 
-    # Note e tempi
-    note_tmp = st.text_area("Note", key="note_tmp")
-    ore_tmp = st.number_input("Ore impiegate", min_value=0, max_value=24, step=1, key="ore_tmp")
-    minuti_tmp = st.number_input("Minuti impiegati", min_value=0, max_value=59, step=1, key="min_tmp")
+        tipologie_tmp = list(macro_tipologia_attivita.get(macro_tmp, {}).keys()) if macro_tmp else []
+        tipologia_tmp = st.selectbox("Tipologia", ["-- Seleziona --"] + tipologie_tmp if tipologie_tmp else ["-- Seleziona --"], key="tipologia_form_tmp")
+        if tipologia_tmp == "-- Seleziona --":
+            tipologia_tmp = None
 
-    # --- Campi aggiuntivi per Accettazione o Refertazione ---
-    num_campioni, tipo_malattia, num_referti, tipo_malattia_ref = None, None, None, None
-
-    if macro_tmp == "ACCETTAZIONE":
-        with st.expander("Dettagli campioni"):
-            num_campioni = st.number_input("Numero di campioni", min_value=0, step=1, key="num_campioni")
-            tipo_malattia = st.selectbox("Tipo di malattia", ["-- Seleziona --", "Parkinson", "Alzheimer", "Altro"], key="tipo_malattia")
-            if tipo_malattia == "-- Seleziona --":
-                tipo_malattia = None
-
-    elif macro_tmp == "REFERTAZIONE":
-        with st.expander("Dettagli referti"):
-            num_referti = st.number_input("Numero di referti", min_value=0, step=1, key="num_referti")
-            tipo_malattia_ref = st.selectbox("Tipo di malattia", ["-- Seleziona --", "Parkinson", "Alzheimer", "Altro"], key="tipo_malattia_ref")
-            if tipo_malattia_ref == "-- Seleziona --":
-                tipo_malattia_ref = None
-
-    # --- Salvataggio attività ---
-    with st.form("salva_attivita_form"):
-        submitted = st.form_submit_button("Salva")
-        if submitted:
-            if not (macro_tmp and tipologia_tmp and attivita_tmp):
-                st.error("Seleziona MacroAttività, Tipologia e Attività prima di salvare!")
-            else:
-                new_id = 1 if st.session_state.df_att.empty else st.session_state.df_att["ID"].max() + 1
-                new_row = pd.DataFrame([{
-                    "ID": new_id,
-                    "NomeUtente": st.session_state.username,
-                    "Data": datetime.now(),
-                    "MacroAttivita": macro_tmp,
-                    "Tipologia": tipologia_tmp,
-                    "Attivita": attivita_tmp,
-                    "Note": note_tmp,
-                    "Ore": ore_tmp,
-                    "Minuti": minuti_tmp,
-                    "NumCampioni": num_campioni,
-                    "TipoMalattia": tipo_malattia,
-                    "NumReferti": num_referti,
-                    "TipoMalattiaRef": tipo_malattia_ref
-                }])
-                st.session_state.df_att = pd.concat([st.session_state.df_att, new_row], ignore_index=True)
-                try:
-                    save_data(st.session_state.sheet, st.session_state.df_att)  # 🔄 salva subito su Google Sheet
-                except Exception as e:
-                    st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
-                st.success("✅ Attività salvata!")
-
-    # --- MODIFICA ATTIVITÀ ESISTENTI ---
-    df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
-    if not df_mio.empty:
-        st.markdown("---")
-        st.subheader("Modifica attività esistente")
-        scelta_id = st.selectbox("Seleziona attività da modificare", df_mio["ID"], key="scelta_id_mod")
-        attivita_da_modificare = df_mio[df_mio["ID"] == scelta_id].iloc[0]
-
-        # Data/Ora correnti della riga selezionata
-        current_dt = pd.to_datetime(attivita_da_modificare["Data"], errors="coerce")
-        default_date = (current_dt.date() if pd.notna(current_dt) else datetime.today().date())
-        default_time = (current_dt.time() if pd.notna(current_dt) else datetime.now().replace(second=0, microsecond=0).time())
-
-        # Picker data/ora
-        data_mod = st.date_input("Data", value=default_date, key=f"data_mod_{scelta_id}")
-        ora_mod = st.time_input("Ora", value=default_time, key=f"ora_mod_{scelta_id}")
-
-        # MacroAttività
-        macro_mod_list = list(macro_tipologia_attivita.keys())
-        idx_macro = macro_mod_list.index(attivita_da_modificare["MacroAttivita"]) if attivita_da_modificare["MacroAttivita"] in macro_mod_list else 0
-        macro_mod = st.selectbox("MacroAttività", macro_mod_list, index=idx_macro, key=f"macro_mod_{scelta_id}")
-
-        # Tipologia
-        tipologie_mod = list(macro_tipologia_attivita.get(macro_mod, {}).keys())
-        idx_tipologia = tipologie_mod.index(attivita_da_modificare["Tipologia"]) if attivita_da_modificare["Tipologia"] in tipologie_mod else 0
-        tipologia_mod = st.selectbox("Tipologia", tipologie_mod, index=idx_tipologia, key=f"tipologia_mod_{scelta_id}")
-
-        # Attività
-        attivita_list_mod = macro_tipologia_attivita.get(macro_mod, {}).get(tipologia_mod, [])
-        idx_att = attivita_list_mod.index(attivita_da_modificare["Attivita"]) if attivita_da_modificare["Attivita"] in attivita_list_mod else 0
-        attivita_mod = st.selectbox("Attività", attivita_list_mod, index=idx_att, key=f"attivita_mod_{scelta_id}")
+        attivita_list_tmp = macro_tipologia_attivita.get(macro_tmp, {}).get(tipologia_tmp, []) if tipologia_tmp else []
+        attivita_tmp = st.selectbox("Attività", ["-- Seleziona --"] + attivita_list_tmp if attivita_list_tmp else ["-- Seleziona --"], key="attivita_form_tmp")
+        if attivita_tmp == "-- Seleziona --":
+            attivita_tmp = None
 
         # Note e tempi
-        note_mod = st.text_area("Note", attivita_da_modificare["Note"], key=f"note_mod_{scelta_id}")
-        ore_mod = st.number_input("Ore impiegate", min_value=0, max_value=24, step=1,
-                                  value=int(attivita_da_modificare.get("Ore", 0)), key=f"ore_mod_{scelta_id}")
-        minuti_mod = st.number_input("Minuti impiegati", min_value=0, max_value=59, step=1,
-                                     value=int(attivita_da_modificare.get("Minuti", 0)), key=f"min_mod_{scelta_id}")
+        note_tmp = st.text_area("Note", key="note_tmp")
+        ore_tmp = st.number_input("Ore impiegate", min_value=0, max_value=24, step=1, key="ore_tmp")
+        minuti_tmp = st.number_input("Minuti impiegati", min_value=0, max_value=59, step=1, key="min_tmp")
 
-        if st.button("Salva modifiche", key=f"btn_modifica_{scelta_id}"):
-            nuovo_dt = datetime.combine(data_mod, ora_mod)
-            st.session_state.df_att.loc[
-                st.session_state.df_att["ID"] == scelta_id,
-                ["Data","MacroAttivita","Tipologia","Attivita","Note","Ore","Minuti"]
-            ] = [nuovo_dt, macro_mod, tipologia_mod, attivita_mod, note_mod, ore_mod, minuti_mod]
+        # Campi aggiuntivi
+        num_campioni, tipo_malattia, num_referti, tipo_malattia_ref = None, None, None, None
+        if macro_tmp == "ACCETTAZIONE":
+            with st.expander("Dettagli campioni"):
+                num_campioni = st.number_input("Numero di campioni", min_value=0, step=1, key="num_campioni")
+                tipo_malattia = st.selectbox("Tipo di malattia", ["-- Seleziona --", "Parkinson", "Alzheimer", "Altro"], key="tipo_malattia")
+                if tipo_malattia == "-- Seleziona --":
+                    tipo_malattia = None
+        elif macro_tmp == "REFERTAZIONE":
+            with st.expander("Dettagli referti"):
+                num_referti = st.number_input("Numero di referti", min_value=0, step=1, key="num_referti")
+                tipo_malattia_ref = st.selectbox("Tipo di malattia", ["-- Seleziona --", "Parkinson", "Alzheimer", "Altro"], key="tipo_malattia_ref")
+                if tipo_malattia_ref == "-- Seleziona --":
+                    tipo_malattia_ref = None
 
-            try:
-                save_data(st.session_state.sheet, st.session_state.df_att)  # 🔄 salva su Google Sheets
-            except Exception as e:
-                st.warning(f"Modifica salvata localmente ma non su Google Sheets: {e}")
-            st.success("✅ Attività modificata!")
+        # Salvataggio
+        with st.form("salva_attivita_form"):
+            submitted = st.form_submit_button("💾 Salva attività")
+            if submitted:
+                if not (macro_tmp and tipologia_tmp and attivita_tmp):
+                    st.error("Seleziona MacroAttività, Tipologia e Attività prima di salvare!")
+                else:
+                    new_id = 1 if st.session_state.df_att.empty else int(pd.to_numeric(st.session_state.df_att["ID"], errors="coerce").fillna(0).max()) + 1
+                    new_row = pd.DataFrame([{
+                        "ID": new_id,
+                        "NomeUtente": st.session_state.username,
+                        "Data": datetime.now(),
+                        "MacroAttivita": macro_tmp,
+                        "Tipologia": tipologia_tmp,
+                        "Attivita": attivita_tmp,
+                        "Note": note_tmp,
+                        "Ore": ore_tmp,
+                        "Minuti": minuti_tmp,
+                        "NumCampioni": num_campioni,
+                        "TipoMalattia": tipo_malattia,
+                        "NumReferti": num_referti,
+                        "TipoMalattiaRef": tipo_malattia_ref
+                    }])
+                    st.session_state.df_att = pd.concat([st.session_state.df_att, new_row], ignore_index=True)
+                    try:
+                        save_data(st.session_state.sheet, st.session_state.df_att)
+                    except Exception as e:
+                        st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
+                    st.success("✅ Attività salvata!")
 
-    # --- ELENCO ATTIVITÀ CON FILTRO & PAGINAZIONE ---
-    st.markdown("---")
-    st.subheader("Le mie attività - elenco")
+    # ---------- MODIFICA ----------
+    elif scelta_pagina == "✏️ Modifica attività":
+        st.subheader("✏️ Modifica attività esistente")
+        df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
+        if df_mio.empty:
+            st.info("Nessuna attività registrata.")
+        else:
+            scelta_id = st.selectbox("Seleziona attività", df_mio["ID"], key="scelta_id_mod")
+            attivita_da_modificare = df_mio[df_mio["ID"] == scelta_id].iloc[0]
 
-    df_mio = st.session_state.df_att[
-        st.session_state.df_att["NomeUtente"] == st.session_state.username
-    ].copy()
+            current_dt = pd.to_datetime(attivita_da_modificare["Data"], errors="coerce")
+            default_date = (current_dt.date() if pd.notna(current_dt) else datetime.today().date())
+            default_time = (current_dt.time() if pd.notna(current_dt) else datetime.now().replace(second=0, microsecond=0).time())
 
-    if df_mio.empty:
-        st.info("Nessuna attività registrata.")
-    else:
-        if not pd.api.types.is_datetime64_any_dtype(df_mio["Data"]):
-            df_mio["Data"] = pd.to_datetime(df_mio["Data"], errors="coerce")
+            data_mod = st.date_input("Data", value=default_date, key=f"data_mod_{scelta_id}")
+            ora_mod = st.time_input("Ora", value=default_time, key=f"ora_mod_{scelta_id}")
 
-        data_min = df_mio["Data"].dropna().min().date()
-        data_max = df_mio["Data"].dropna().max().date()
+            macro_mod_list = list(macro_tipologia_attivita.keys())
+            idx_macro = macro_mod_list.index(attivita_da_modificare["MacroAttivita"]) if attivita_da_modificare["MacroAttivita"] in macro_mod_list else 0
+            macro_mod = st.selectbox("MacroAttività", macro_mod_list, index=idx_macro, key=f"macro_mod_{scelta_id}")
 
-        colA, colB, colC = st.columns([1, 1, 1])
-        with colA:
-            start_date = st.date_input("Da", data_min, key="tbl_start")
-        with colB:
-            end_date = st.date_input("A", data_max, key="tbl_end")
-        with colC:
-            page_size = st.selectbox("Righe per pagina", [10, 20, 50, 100], index=1, key="tbl_pagesize")
+            tipologie_mod = list(macro_tipologia_attivita.get(macro_mod, {}).keys())
+            idx_tipologia = tipologie_mod.index(attivita_da_modificare["Tipologia"]) if attivita_da_modificare["Tipologia"] in tipologie_mod else 0
+            tipologia_mod = st.selectbox("Tipologia", tipologie_mod, index=idx_tipologia, key=f"tipologia_mod_{scelta_id}")
 
-        df_filtered = df_mio[
-            df_mio["Data"].notna()
-            & (df_mio["Data"].dt.date >= start_date)
-            & (df_mio["Data"].dt.date <= end_date)
-        ].sort_values("Data", ascending=False)
+            attivita_list_mod = macro_tipologia_attivita.get(macro_mod, {}).get(tipologia_mod, [])
+            idx_att = attivita_list_mod.index(attivita_da_modificare["Attivita"]) if attivita_da_modificare["Attivita"] in attivita_list_mod else 0
+            attivita_mod = st.selectbox("Attività", attivita_list_mod, index=idx_att, key=f"attivita_mod_{scelta_id}")
 
-        # --- Ricerca rapida ---
-        search_term = st.text_input("🔍 Cerca nelle attività (note, attività, tipologia)...", "")
-        if search_term:
-            df_filtered = df_filtered[
-                df_filtered.apply(lambda row: row.astype(str).str.contains(search_term, case=False).any(), axis=1)
+            note_mod = st.text_area("Note", attivita_da_modificare["Note"], key=f"note_mod_{scelta_id}")
+            ore_mod = st.number_input("Ore impiegate", min_value=0, max_value=24, step=1,
+                                    value=int(attivita_da_modificare.get("Ore", 0)), key=f"ore_mod_{scelta_id}")
+            minuti_mod = st.number_input("Minuti impiegati", min_value=0, max_value=59, step=1,
+                                        value=int(attivita_da_modificare.get("Minuti", 0)), key=f"min_mod_{scelta_id}")
+
+            if st.button("💾 Salva modifiche", key=f"btn_modifica_{scelta_id}"):
+                nuovo_dt = datetime.combine(data_mod, ora_mod)
+                st.session_state.df_att.loc[
+                    st.session_state.df_att["ID"] == scelta_id,
+                    ["Data","MacroAttivita","Tipologia","Attivita","Note","Ore","Minuti"]
+                ] = [nuovo_dt, macro_mod, tipologia_mod, attivita_mod, note_mod, ore_mod, minuti_mod]
+                try:
+                    save_data(st.session_state.sheet, st.session_state.df_att)
+                except Exception as e:
+                    st.warning(f"Modifica salvata localmente ma non su Google Sheets: {e}")
+                st.success("✅ Attività modificata!")
+
+    # ---------- ELENCO ----------
+    elif scelta_pagina == "📑 Elenco attività":
+        st.subheader("📑 Le mie attività - elenco")
+        df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username].copy()
+        if df_mio.empty:
+            st.info("Nessuna attività registrata.")
+        else:
+            if not pd.api.types.is_datetime64_any_dtype(df_mio["Data"]):
+                df_mio["Data"] = pd.to_datetime(df_mio["Data"], errors="coerce")
+
+            data_min = df_mio["Data"].dropna().min().date()
+            data_max = df_mio["Data"].dropna().max().date()
+
+            colA, colB, colC = st.columns([1, 1, 1])
+            with colA:
+                start_date = st.date_input("Da", data_min, key="tbl_start")
+            with colB:
+                end_date = st.date_input("A", data_max, key="tbl_end")
+            with colC:
+                page_size = st.selectbox("Righe per pagina", [10, 20, 50, 100], index=1, key="tbl_pagesize")
+
+            df_filtered = df_mio[
+                df_mio["Data"].notna()
+                & (df_mio["Data"].dt.date >= start_date)
+                & (df_mio["Data"].dt.date <= end_date)
+            ].sort_values("Data", ascending=False)
+
+            search_term = st.text_input("🔍 Cerca nelle attività (note, attività, tipologia)...", "")
+            if search_term:
+                df_filtered = df_filtered[
+                    df_filtered.apply(lambda row: row.astype(str).str.contains(search_term, case=False).any(), axis=1)
+                ]
+
+            total = len(df_filtered)
+            if total == 0:
+                st.info("Nessuna attività nel periodo o filtro selezionato.")
+            else:
+                total_pages = (total + page_size - 1) // page_size
+                page = st.number_input("Pagina", min_value=1, max_value=total_pages, value=1, step=1, key="tbl_page")
+                start = (page - 1) * page_size
+                end = min(start + page_size, total)
+
+                st.caption(f"Mostrando {start + 1}–{end} di {total} record")
+                st.dataframe(df_filtered.iloc[start:end])
+
+                st.download_button(
+                    "⬇️ Scarica risultato (CSV)",
+                    df_filtered.to_csv(index=False).encode("utf-8"),
+                    "attivita_filtrate.csv",
+                    "text/csv",
+                    key="tbl_download"
+                )
+
+    # ---------- GRAFICI ----------
+    elif scelta_pagina == "📊 Riepilogo e Grafici":
+        st.subheader("📊 Riepilogo attività personali")
+
+        df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
+
+        if df_mio.empty:
+            st.info("Nessuna attività registrata.")
+        else:
+            if not pd.api.types.is_datetime64_any_dtype(df_mio["Data"]):
+                df_mio["Data"] = pd.to_datetime(df_mio["Data"], errors="coerce")
+
+            data_min = df_mio["Data"].dropna().min().date() if df_mio["Data"].notna().any() else datetime.today().date()
+            data_max = df_mio["Data"].dropna().max().date() if df_mio["Data"].notna().any() else datetime.today().date()
+
+            start_date = st.date_input("Data inizio", data_min)
+            end_date = st.date_input("Data fine", data_max)
+
+            df_periodo = df_mio[
+                df_mio["Data"].notna()
+                & (df_mio["Data"].dt.date >= start_date)
+                & (df_mio["Data"].dt.date <= end_date)
             ]
 
-        total = len(df_filtered)
-        if total == 0:
-            st.info("Nessuna attività nel periodo selezionato.")
-        else:
-            total_pages = (total + page_size - 1) // page_size
-            page = st.number_input("Pagina", min_value=1, max_value=total_pages, value=1, step=1, key="tbl_page")
-            start = (page - 1) * page_size
-            end = min(start + page_size, total)
+            # KPI
+            tot_ore = df_periodo["Ore"].fillna(0).sum()
+            tot_minuti = df_periodo["Minuti"].fillna(0).sum()
+            tot_ore_equivalenti = tot_ore + (tot_minuti / 60)
+            tot_campioni = df_periodo["NumCampioni"].fillna(0).sum()
+            tot_referti = df_periodo["NumReferti"].fillna(0).sum()
 
-            st.caption(f"Mostrando {start + 1}–{end} di {total} record")
-            st.dataframe(df_filtered.iloc[start:end])
+            col1, col2, col3 = st.columns(3)
+            col1.metric("⏱️ Ore totali", f"{tot_ore_equivalenti:.1f}")
+            col2.metric("🧪 Campioni", int(tot_campioni))
+            col3.metric("📄 Referti", int(tot_referti))
 
-            st.download_button(
-                "Scarica risultato (CSV)",
-                df_filtered.to_csv(index=False).encode("utf-8"),
-                "attivita_filtrate.csv",
-                "text/csv",
-                key="tbl_download"
-            )
-
-    # --- GRAFICI RIASSUNTIVI PERSONALI ---
-    st.markdown("---")
-    st.subheader("Riepilogo attività personali")
-
-    df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
-
-    if not df_mio.empty:
-        if not pd.api.types.is_datetime64_any_dtype(df_mio["Data"]):
-            df_mio["Data"] = pd.to_datetime(df_mio["Data"], errors="coerce")
-
-        data_min = df_mio["Data"].dropna().min().date() if df_mio["Data"].notna().any() else datetime.today().date()
-        data_max = df_mio["Data"].dropna().max().date() if df_mio["Data"].notna().any() else datetime.today().date()
-
-        start_date = st.date_input("Data inizio", data_min)
-        end_date = st.date_input("Data fine", data_max)
-
-        df_periodo = df_mio[
-            df_mio["Data"].notna()
-            & (df_mio["Data"].dt.date >= start_date)
-            & (df_mio["Data"].dt.date <= end_date)
-        ]
-
-        # --- 📊 KPI ---
-        st.markdown("### 📊 Indicatori chiave (KPI)")
-
-        tot_ore = df_periodo["Ore"].fillna(0).sum()
-        tot_minuti = df_periodo["Minuti"].fillna(0).sum()
-        tot_ore_equivalenti = tot_ore + (tot_minuti / 60)
-
-        tot_campioni = df_periodo["NumCampioni"].fillna(0).sum()
-        tot_referti = df_periodo["NumReferti"].fillna(0).sum()
-
-        col1, col2, col3 = st.columns(3)
-        col1.metric("⏱️ Ore totali", f"{tot_ore_equivalenti:.1f}")
-        col2.metric("🧪 Campioni", int(tot_campioni))
-        col3.metric("📄 Referti", int(tot_referti))
-
-        # --- Grafici ---
-        # 1) Ore totali per MacroAttività
-        st.markdown("**Ore totali per MacroAttività**")
-        ore_macro = df_periodo.copy()
-        ore_macro["Ore"] = pd.to_numeric(ore_macro["Ore"], errors="coerce").fillna(0)
-        ore_macro = ore_macro.groupby("MacroAttivita")["Ore"].sum()
-        if not ore_macro.empty:
-            st.bar_chart(ore_macro)
-        else:
-            st.info("Nessuna ora registrata nel periodo selezionato.")
-
-        # 2) Referti: compilati vs validati
-        df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
-        if not df_ref.empty:
-            st.markdown("**Referti: compilati vs validati**")
-            referti_counts = df_ref["Tipologia"].value_counts().reindex(
-                ["Compilazione referti", "Rilettura e validazione referti"]
-            ).fillna(0)
-            st.bar_chart(referti_counts)
-        else:
-            st.info("Nessun referto registrato nel periodo selezionato.")
-
-        # 3) Accettazione: campioni interni vs esterni
-        df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
-        if not df_acc.empty:
-            st.markdown("**Accettazione: campioni interni vs esterni**")
-            df_acc["NumCampioni"] = pd.to_numeric(df_acc["NumCampioni"], errors="coerce").fillna(0)
-            att_lower = df_acc["Attivita"].str.lower().fillna("")
-            df_acc["TipoAcc"] = att_lower.apply(
-                lambda s: "Interni" if "intern" in s else ("Esterni" if "estern" in s else "Altro")
-            )
-            serie_accettazione = (
-                df_acc.groupby("TipoAcc")["NumCampioni"]
-                      .sum()
-                      .reindex(["Interni", "Esterni", "Altro"])
-                      .fillna(0)
-            )
-            serie_plot = serie_accettazione[["Interni", "Esterni"]].fillna(0)
-            if serie_plot.sum() > 0:
-                st.bar_chart(serie_plot)
+            # Grafici
+            st.markdown("**Ore totali per MacroAttività**")
+            ore_macro = df_periodo.copy()
+            ore_macro["Ore"] = pd.to_numeric(ore_macro["Ore"], errors="coerce").fillna(0)
+            ore_macro = ore_macro.groupby("MacroAttivita")["Ore"].sum()
+            if not ore_macro.empty:
+                st.bar_chart(ore_macro)
             else:
-                st.info("Nessun campione registrato nel periodo selezionato.")
-        else:
-            st.info("Nessuna attività di accettazione nel periodo selezionato.")
+                st.info("Nessuna ora registrata nel periodo selezionato.")
 
-# =========================
-# Area CAPO
-# =========================
+            df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
+            if not df_ref.empty:
+                st.markdown("**Referti: compilati vs validati**")
+                referti_counts = df_ref["Tipologia"].value_counts().reindex(
+                    ["Compilazione referti", "Rilettura e validazione referti"]
+                ).fillna(0)
+                st.bar_chart(referti_counts)
+            else:
+                st.info("Nessun referto registrato nel periodo selezionato.")
+
+            df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
+            if not df_acc.empty:
+                st.markdown("**Accettazione: campioni interni vs esterni**")
+                df_acc["NumCampioni"] = pd.to_numeric(df_acc["NumCampioni"], errors="coerce").fillna(0)
+                att_lower = df_acc["Attivita"].str.lower().fillna("")
+                df_acc["TipoAcc"] = att_lower.apply(
+                    lambda s: "Interni" if "intern" in s else ("Esterni" if "estern" in s else "Altro")
+                )
+                serie_accettazione = (
+                    df_acc.groupby("TipoAcc")["NumCampioni"]
+                        .sum()
+                        .reindex(["Interni", "Esterni", "Altro"])
+                        .fillna(0)
+                )
+                serie_plot = serie_accettazione[["Interni", "Esterni"]].fillna(0)
+                if serie_plot.sum() > 0:
+                    st.bar_chart(serie_plot)
+                else:
+                    st.info("Nessun campione registrato nel periodo selezionato.")
+            else:
+                st.info("Nessuna attività di accettazione nel periodo selezionato.")
+
+# =====================================
+# Area CAPO (Admin)
+# =====================================
 elif st.session_state.ruolo == "capo":
     st.subheader("📊 Resoconto completo (Admin)")
 
@@ -528,7 +501,7 @@ elif st.session_state.ruolo == "capo":
         st.markdown("### 🔍 Filtri")
         col1, col2, col3 = st.columns(3)
         with col1:
-            utenti_sel = st.multiselect("Utenti", sorted(df_all["NomeUtente"].unique()), default=list(df_all["NomeUtente"].unique()))
+            utenti_sel = st.multiselect("Utenti", sorted(df_all["NomeUtente"].dropna().unique()), default=list(df_all["NomeUtente"].dropna().unique()))
         with col2:
             macro_sel = st.multiselect("MacroAttività", sorted(df_all["MacroAttivita"].dropna().unique()), default=list(df_all["MacroAttivita"].dropna().unique()))
         with col3:
@@ -585,5 +558,11 @@ elif st.session_state.ruolo == "capo":
             stats = df_filtrato.groupby("NomeUtente")[["NumCampioni","NumReferti"]].sum().fillna(0)
             st.bar_chart(stats)
 
-
-
+            # Download CSV completo filtrato
+            st.download_button(
+                "⬇️ Scarica CSV filtrato",
+                df_filtrato.to_csv(index=False).encode("utf-8"),
+                "report_admin_filtrato.csv",
+                "text/csv",
+                key="admin_download"
+            )
