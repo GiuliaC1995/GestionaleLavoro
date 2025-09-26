@@ -333,24 +333,78 @@ if st.session_state.ruolo == "utente":
             idx_att = attivita_list_mod.index(attivita_da_modificare["Attivita"]) if attivita_da_modificare["Attivita"] in attivita_list_mod else 0
             attivita_mod = st.selectbox("Attività", attivita_list_mod, index=idx_att, key=f"attivita_mod_{scelta_id}")
 
-            note_mod = st.text_area("Note", attivita_da_modificare["Note"], key=f"note_mod_{scelta_id}")
+            note_val = attivita_da_modificare.get("Note")
+            note_mod = st.text_area("Note", note_val if (isinstance(note_val, str) and note_val != "nan") else "", key=f"note_mod_{scelta_id}")
             ore_mod = st.number_input("Ore impiegate", min_value=0, max_value=24, step=1,
-                                    value=int(attivita_da_modificare.get("Ore", 0)), key=f"ore_mod_{scelta_id}")
+                                    value=int(attivita_da_modificare.get("Ore", 0) or 0), key=f"ore_mod_{scelta_id}")
             minuti_mod = st.number_input("Minuti impiegati", min_value=0, max_value=59, step=1,
-                                        value=int(attivita_da_modificare.get("Minuti", 0)), key=f"min_mod_{scelta_id}")
+                                        value=int(attivita_da_modificare.get("Minuti", 0) or 0), key=f"min_mod_{scelta_id}")
 
-            if st.button("💾 Salva modifiche", key=f"btn_modifica_{scelta_id}"):
-                nuovo_dt = datetime.combine(data_mod, ora_mod)
-                st.session_state.df_att.loc[
-                    st.session_state.df_att["ID"] == scelta_id,
-                    ["Data","MacroAttivita","Tipologia","Attivita","Note","Ore","Minuti"]
-                ] = [nuovo_dt, macro_mod, tipologia_mod, attivita_mod, note_mod, ore_mod, minuti_mod]
-                try:
-                    save_data(st.session_state.sheet, st.session_state.df_att)
-                except Exception as e:
-                    st.warning(f"Modifica salvata localmente ma non su Google Sheets: {e}")
-                st.success("✅ Attività modificata!")
+            # --- Campi extra per ACCETTAZIONE / REFERTAZIONE ---
+            num_campioni_mod, tipo_malattia_mod, num_referti_mod, tipo_malattia_ref_mod = None, None, None, None
+            mal_opts = ["-- Seleziona --", "Parkinson", "Alzheimer", "Altro"]
 
+            if macro_mod == "ACCETTAZIONE":
+                with st.expander("Dettagli campioni"):
+                    num_campioni_mod = st.number_input(
+                        "Numero di campioni",
+                        min_value=0, step=1,
+                        value=int(attivita_da_modificare.get("NumCampioni") or 0),
+                        key=f"numcamp_mod_{scelta_id}"
+                    )
+                    mal_def = attivita_da_modificare.get("TipoMalattia")
+                    idx_mal = mal_opts.index(mal_def) if mal_def in mal_opts else 0
+                    tipo_malattia_mod = st.selectbox(
+                        "Tipo di malattia",
+                        mal_opts, index=idx_mal,
+                        key=f"tipomal_mod_{scelta_id}"
+                    )
+                    if tipo_malattia_mod == "-- Seleziona --":
+                        tipo_malattia_mod = None
+
+            elif macro_mod == "REFERTAZIONE":
+                with st.expander("Dettagli referti"):
+                    num_referti_mod = st.number_input(
+                        "Numero di referti",
+                        min_value=0, step=1,
+                        value=int(attivita_da_modificare.get("NumReferti") or 0),
+                        key=f"numref_mod_{scelta_id}"
+                    )
+                    mal_ref_def = attivita_da_modificare.get("TipoMalattiaRef")
+                    idx_mal_ref = mal_opts.index(mal_ref_def) if mal_ref_def in mal_opts else 0
+                    tipo_malattia_ref_mod = st.selectbox(
+                        "Tipo di malattia",
+                        mal_opts, index=idx_mal_ref,
+                        key=f"tipomalref_mod_{scelta_id}"
+                    )
+                    if tipo_malattia_ref_mod == "-- Seleziona --":
+                        tipo_malattia_ref_mod = None
+
+            col_save, col_del = st.columns(2)
+            with col_save:
+                if st.button("💾 Salva modifiche", key=f"btn_modifica_{scelta_id}"):
+                    nuovo_dt = datetime.combine(data_mod, ora_mod)
+                    st.session_state.df_att.loc[
+                        st.session_state.df_att["ID"] == scelta_id,
+                        ["Data","MacroAttivita","Tipologia","Attivita","Note","Ore","Minuti",
+                         "NumCampioni","TipoMalattia","NumReferti","TipoMalattiaRef"]
+                    ] = [nuovo_dt, macro_mod, tipologia_mod, attivita_mod, note_mod, ore_mod, minuti_mod,
+                         num_campioni_mod, tipo_malattia_mod, num_referti_mod, tipo_malattia_ref_mod]
+                    try:
+                        save_data(st.session_state.sheet, st.session_state.df_att)
+                    except Exception as e:
+                        st.warning(f"Modifica salvata localmente ma non su Google Sheets: {e}")
+                    st.success("✅ Attività modificata!")
+
+            with col_del:
+                if st.button("🗑️ Elimina attività", key=f"btn_elimina_{scelta_id}"):
+                    st.session_state.df_att = st.session_state.df_att[st.session_state.df_att["ID"] != scelta_id]
+                    try:
+                        save_data(st.session_state.sheet, st.session_state.df_att)
+                    except Exception as e:
+                        st.warning(f"Eliminazione salvata localmente ma non su Google Sheets: {e}")
+                    st.success("🗑️ Attività eliminata!")
+                    st.rerun()
     # ---------- ELENCO ----------
     elif scelta_pagina == "📑 Elenco attività":
         st.subheader("📑 Le mie attività - elenco")
@@ -566,4 +620,5 @@ elif st.session_state.ruolo == "capo":
                 "text/csv",
                 key="admin_download"
             )
+
 
