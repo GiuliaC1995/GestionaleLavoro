@@ -21,6 +21,23 @@ def connect_gsheet(sheet_name, worksheet=0):
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     return client.open(sheet_name).get_worksheet(worksheet)
+    
+def load_utenti(sheet_name="GestionaleLavoro", worksheet_name="Utenti"):
+    client = gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(
+        st.secrets["google"], 
+        ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/spreadsheets",
+         "https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
+    ))
+    ws = client.open(sheet_name).worksheet(worksheet_name)
+    data = ws.get_all_records()
+    df = pd.DataFrame(data)
+    if df.empty:
+        df = pd.DataFrame(columns=["NomeUtente","Password","Ruolo"])
+    return ws, df
+
+def save_utenti(ws, df):
+    ws.clear()
+    ws.update([df.columns.tolist()] + df.astype(str).values.tolist())
 
 def load_data(sheet):
     data = sheet.get_all_records()
@@ -56,13 +73,15 @@ def sync_now():
 # =====================================
 # Dati utenti (login demo)
 # =====================================
-utenti_data = {
-    "NomeUtente": ["GiuliaC","Cristina","Juliette","Tina","Bruno","Stefania","Domenica","Claudia","Raffaella","Luca","Emma","Arcangela","Julia","GiuliaT","Emiliano"],
-    "Password": ["GiuliaC123","Cristina123","Juliette123","Tina123","Bruno123","Stefania123","Domenica123","Claudia123","Raffaella123","Luca123","Emma123","Arcangela123","Julia123","GiuliaT123","Emiliano123"],
-    "Ruolo": ["utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","capo"]
-}
-df_utenti = pd.DataFrame(utenti_data)
 
+# Carico gli utenti dal foglio "Utenti"
+if "df_utenti" not in st.session_state:
+    try:
+        st.session_state.ws_utenti, st.session_state.df_utenti = load_utenti()
+    except Exception as e:
+        st.error(f"Errore caricamento utenti da Google Sheets: {e}")
+        st.stop()
+   
 # =====================================
 # Dizionario Macro/Tipologia/Attività
 # =====================================
@@ -171,7 +190,8 @@ if "logged_in" not in st.session_state:
     st.session_state.ruolo = ""
 
 def login(username, password):
-    user = df_utenti[(df_utenti["NomeUtente"]==username) & (df_utenti["Password"]==password)]
+    dfu = st.session_state.df_utenti
+    user = dfu[(dfu["NomeUtente"] == username) & (dfu["Password"] == password)]
     if not user.empty:
         return user.iloc[0]["Ruolo"]
     return None
@@ -240,7 +260,9 @@ if st.session_state.get("show_pw_change", False):
     confirm_pw = st.text_input("Conferma nuova password", type="password", key="confirm_pw")
 
     if st.button("Salva nuova password"):
-        user_row = df_utenti[df_utenti["NomeUtente"] == st.session_state.username]
+        dfu = st.session_state.df_utenti
+        user_row = dfu[dfu["NomeUtente"] == st.session_state.username]
+
         if user_row.empty:
             st.error("Utente non trovato.")
         elif old_pw != user_row.iloc[0]["Password"]:
@@ -250,8 +272,17 @@ if st.session_state.get("show_pw_change", False):
         elif len(new_pw) < 6:
             st.error("❌ La password deve avere almeno 6 caratteri.")
         else:
-            df_utenti.loc[df_utenti["NomeUtente"] == st.session_state.username, "Password"] = new_pw
-            st.success("✅ Password cambiata con successo!")
+            st.session_state.df_utenti.loc[
+                st.session_state.df_utenti["NomeUtente"] == st.session_state.username, "Password"
+            ] = new_pw
+
+            # Salvo subito su Google Sheets
+            try:
+                save_utenti(st.session_state.ws_utenti, st.session_state.df_utenti)
+                st.success("✅ Password cambiata e salvata su Google Sheets!")
+            except Exception as e:
+                st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
+
             st.session_state.show_pw_change = False
             
 # =====================================
@@ -681,8 +712,4 @@ elif st.session_state.ruolo == "capo":
 
             st.markdown("**Campioni per utente**")
             st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
-
-
-
-
 
