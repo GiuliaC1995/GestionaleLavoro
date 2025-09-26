@@ -204,7 +204,7 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.session_state.username = username
             st.session_state.ruolo = ruolo
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Nome utente o password errati")
     st.stop()
@@ -223,7 +223,7 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.ruolo = ""
-    st.experimental_rerun()
+    st.rerun()
 
 # =====================================
 # Navigazione per ruolo
@@ -566,3 +566,4 @@ elif st.session_state.ruolo == "capo":
                 "text/csv",
                 key="admin_download"
             )
+
