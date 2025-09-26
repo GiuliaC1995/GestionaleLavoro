@@ -224,7 +224,36 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+    
+# =====================================
+# Cambio password
+# =====================================
+st.sidebar.markdown("---")
+if st.sidebar.button("🔑 Cambia password"):
+    st.session_state.show_pw_change = True
 
+if st.session_state.get("show_pw_change", False):
+    st.subheader("🔑 Cambia la tua password")
+
+    old_pw = st.text_input("Password attuale", type="password", key="old_pw")
+    new_pw = st.text_input("Nuova password", type="password", key="new_pw")
+    confirm_pw = st.text_input("Conferma nuova password", type="password", key="confirm_pw")
+
+    if st.button("Salva nuova password"):
+        user_row = df_utenti[df_utenti["NomeUtente"] == st.session_state.username]
+        if user_row.empty:
+            st.error("Utente non trovato.")
+        elif old_pw != user_row.iloc[0]["Password"]:
+            st.error("❌ La password attuale non è corretta.")
+        elif new_pw != confirm_pw:
+            st.error("❌ Le nuove password non coincidono.")
+        elif len(new_pw) < 6:
+            st.error("❌ La password deve avere almeno 6 caratteri.")
+        else:
+            df_utenti.loc[df_utenti["NomeUtente"] == st.session_state.username, "Password"] = new_pw
+            st.success("✅ Password cambiata con successo!")
+            st.session_state.show_pw_change = False
+            
 # =====================================
 # Navigazione per ruolo
 # =====================================
@@ -652,6 +681,7 @@ elif st.session_state.ruolo == "capo":
 
             st.markdown("**Campioni per utente**")
             st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
+
 
 
 
