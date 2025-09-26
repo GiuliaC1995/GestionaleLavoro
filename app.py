@@ -57,9 +57,9 @@ def sync_now():
 # Dati utenti (login demo)
 # =====================================
 utenti_data = {
-    "NomeUtente": ["giulia","marco","anna","prof"],
-    "Password": ["123","123","123","prof123"],
-    "Ruolo": ["utente","utente","utente","capo"]
+    "NomeUtente": ["GiuliaC","Cristina","Juliette","Tina","Bruno","Stefania","Domenica","Claudia","Raffaella","Luca","Emma","Arcangela","Julia","GiuliaT","Emiliano"],
+    "Password": ["GiuliaC123","Cristina123","Juliette123","Tina123","Bruno123","Stefania123","Domenica123","Claudia123","Raffaella123","Luca123","Emma123","Arcangela123","Julia123","GiuliaT123","Emiliano123"],
+    "Ruolo": ["utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","utente","capo"]
 }
 df_utenti = pd.DataFrame(utenti_data)
 
@@ -192,7 +192,7 @@ if "df_att" not in st.session_state:
 # =====================================
 # UI - Titolo e Login
 # =====================================
-st.title("📊 Gestionale Lavoro")
+st.title("🧬SmartLab")
 
 if not st.session_state.logged_in:
     st.subheader("Login")
@@ -540,85 +540,119 @@ if st.session_state.ruolo == "utente":
 # Area CAPO (Admin)
 # =====================================
 elif st.session_state.ruolo == "capo":
-    st.subheader("📊 Resoconto completo (Admin)")
+    st.subheader("📊 Dashboard Amministratore")
 
     df_all = st.session_state.df_att.copy()
 
     if df_all.empty:
         st.info("Nessuna attività registrata dagli utenti.")
     else:
-        # Converto la colonna Data
         if not pd.api.types.is_datetime64_any_dtype(df_all["Data"]):
             df_all["Data"] = pd.to_datetime(df_all["Data"], errors="coerce")
 
-        # --- Filtri dinamici ---
-        st.markdown("### 🔍 Filtri")
-        col1, col2, col3 = st.columns(3)
+        # --- FILTRO PERIODO ---
+        data_min = df_all["Data"].dropna().min().date()
+        data_max = df_all["Data"].dropna().max().date()
+        col1, col2 = st.columns(2)
         with col1:
-            utenti_sel = st.multiselect("Utenti", sorted(df_all["NomeUtente"].dropna().unique()), default=list(df_all["NomeUtente"].dropna().unique()))
+            start_date = st.date_input("Da", data_min, key="admin_start")
         with col2:
-            macro_sel = st.multiselect("MacroAttività", sorted(df_all["MacroAttivita"].dropna().unique()), default=list(df_all["MacroAttivita"].dropna().unique()))
-        with col3:
-            data_min = df_all["Data"].dropna().min().date()
-            data_max = df_all["Data"].dropna().max().date()
-            start_date = st.date_input("Da", data_min)
-            end_date = st.date_input("A", data_max)
+            end_date = st.date_input("A", data_max, key="admin_end")
 
-        df_filtrato = df_all[
-            (df_all["NomeUtente"].isin(utenti_sel))
-            & (df_all["MacroAttivita"].isin(macro_sel))
+        df_periodo = df_all[
+            df_all["Data"].notna()
             & (df_all["Data"].dt.date >= start_date)
             & (df_all["Data"].dt.date <= end_date)
         ]
 
-        if df_filtrato.empty:
-            st.warning("⚠️ Nessun dato corrispondente ai filtri selezionati.")
+        # =========================
+        # 1) Panoramica Campioni e Referti
+        # =========================
+        st.markdown("### 📦 Panoramica Campioni e Referti")
+
+        tot_campioni = df_periodo["NumCampioni"].fillna(0).sum()
+        tot_referti = df_periodo["NumReferti"].fillna(0).sum()
+
+        c1, c2 = st.columns(2)
+        c1.metric("🧪 Campioni totali", int(tot_campioni))
+        c2.metric("📄 Referti totali", int(tot_referti))
+
+        # Suddivisione referti per tipo
+        df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
+        if not df_ref.empty:
+            st.markdown("**Referti per tipologia**")
+            ref_counts = df_ref["Tipologia"].value_counts()
+            st.bar_chart(ref_counts)
+
+            st.markdown("**Referti per malattia**")
+            ref_mal = df_ref["TipoMalattiaRef"].value_counts()
+            st.bar_chart(ref_mal)
+
+        # Suddivisione campioni per malattia
+        df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
+        if not df_acc.empty:
+            st.markdown("**Campioni per malattia**")
+            camp_mal = df_acc["TipoMalattia"].value_counts()
+            st.bar_chart(camp_mal)
+
+        st.markdown("---")
+
+        # =========================
+        # 2) Monitoraggio per utente
+        # =========================
+        st.markdown("### 👩‍🔬 Monitoraggio per Utente")
+
+        utente_sel = st.selectbox("Seleziona utente", sorted(df_all["NomeUtente"].dropna().unique()))
+        df_user = df_periodo[df_periodo["NomeUtente"] == utente_sel]
+
+        if df_user.empty:
+            st.info(f"Nessuna attività per {utente_sel} nel periodo selezionato.")
         else:
-            # --- KPI globali ---
-            st.markdown("### 📌 Indicatori globali")
-            tot_ore = df_filtrato["Ore"].fillna(0).sum()
-            tot_min = df_filtrato["Minuti"].fillna(0).sum()
-            tot_ore_eq = tot_ore + (tot_min/60)
-            tot_campioni = df_filtrato["NumCampioni"].fillna(0).sum()
-            tot_referti = df_filtrato["NumReferti"].fillna(0).sum()
+            tot_ore = df_user["Ore"].fillna(0).sum() + df_user["Minuti"].fillna(0).sum() / 60
+            st.metric(f"⏱️ Ore totali di {utente_sel}", f"{tot_ore:.1f}")
 
-            c1, c2, c3 = st.columns(3)
-            c1.metric("⏱️ Ore totali", f"{tot_ore_eq:.1f}")
-            c2.metric("🧪 Campioni", int(tot_campioni))
-            c3.metric("📄 Referti", int(tot_referti))
+            st.markdown("**Ore per MacroAttività**")
+            ore_macro = df_user.groupby("MacroAttivita")["Ore"].sum()
+            st.bar_chart(ore_macro)
 
-            # --- Tabella dati filtrati ---
-            st.markdown("### 📑 Tabella dati filtrati")
-            st.dataframe(df_filtrato.sort_values("Data", ascending=False))
+            st.markdown("**Numero referti per tipologia**")
+            ref_user = df_user[df_user["MacroAttivita"] == "REFERTAZIONE"]
+            if not ref_user.empty:
+                st.bar_chart(ref_user["Tipologia"].value_counts())
 
-            # --- Grafici ---
-            st.markdown("### 📈 Grafici")
+            st.markdown("**Campioni per malattia**")
+            camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"]
+            if not camp_user.empty:
+                st.bar_chart(camp_user["TipoMalattia"].value_counts())
 
-            colA, colB = st.columns(2)
+        st.markdown("---")
 
-            with colA:
-                st.markdown("**Ore totali per utente**")
-                ore_user = df_filtrato.groupby("NomeUtente")["Ore"].sum().sort_values(ascending=False)
-                if not ore_user.empty:
-                    st.bar_chart(ore_user)
+        # =========================
+        # 3) Monitoraggio per Attività/Malattia
+        # =========================
+        st.markdown("### 🧬 Monitoraggio per Attività / Malattia")
 
-            with colB:
-                st.markdown("**Ore per MacroAttività**")
-                ore_macro = df_filtrato.groupby("MacroAttivita")["Ore"].sum().sort_values(ascending=False)
-                if not ore_macro.empty:
-                    st.bar_chart(ore_macro)
+        filtro_att = st.selectbox(
+            "Seleziona una malattia/attività da monitorare",
+            sorted(set(df_all["TipoMalattia"].dropna().unique()) | set(df_all["TipoMalattiaRef"].dropna().unique()))
+        )
 
-            st.markdown("**Campioni e Referti per utente**")
-            stats = df_filtrato.groupby("NomeUtente")[["NumCampioni","NumReferti"]].sum().fillna(0)
-            st.bar_chart(stats)
+        df_filtro = df_periodo[
+            (df_periodo["TipoMalattia"] == filtro_att) | (df_periodo["TipoMalattiaRef"] == filtro_att)
+        ]
 
-            # Download CSV completo filtrato
-            st.download_button(
-                "⬇️ Scarica CSV filtrato",
-                df_filtrato.to_csv(index=False).encode("utf-8"),
-                "report_admin_filtrato.csv",
-                "text/csv",
-                key="admin_download"
-            )
+        if df_filtro.empty:
+            st.info(f"Nessun dato trovato per '{filtro_att}' nel periodo selezionato.")
+        else:
+            st.markdown(f"**Dettaglio attività relative a '{filtro_att}'**")
+            st.dataframe(df_filtro.sort_values("Data", ascending=False))
+
+            st.markdown("**Referti per utente**")
+            st.bar_chart(df_filtro.groupby("NomeUtente")["NumReferti"].sum())
+
+            st.markdown("**Campioni per utente**")
+            st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
+
+
 
 
