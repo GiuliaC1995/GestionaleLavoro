@@ -260,6 +260,11 @@ if not st.session_state.logged_in:
 # =====================================
 # Sidebar: info utente e azioni
 # =====================================
+
+# Logo in sidebar
+st.sidebar.image("fsl.png", use_column_width=True)
+st.sidebar.markdown("## SmartLab – Gestionale Laboratorio")
+
 st.sidebar.write(f"Benvenuto, **{st.session_state.username}** ({st.session_state.ruolo})")
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ℹ️ About")
@@ -908,5 +913,6 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
