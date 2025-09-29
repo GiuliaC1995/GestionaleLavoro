@@ -244,7 +244,8 @@ if "df_att" not in st.session_state:
 st.markdown(
     """
     <div style="display:flex; align-items:center;">
-        <img src="fsl.png" alt="Logo" style="width:100px; margin-right:15px;">
+        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/fsl.png" 
+             alt="Logo" style="width:80px; margin-right:15px;">
         <h1 style="margin:0;">SmartLab</h1>
     </div>
     """,
@@ -271,7 +272,7 @@ if not st.session_state.logged_in:
 # =====================================
 
 # Logo in sidebar
-st.sidebar.image("fsl.png", use_container_width=True)
+st.sidebar.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/fsl.png", use_container_width=True)
 st.sidebar.markdown("## SmartLab – Gestionale Laboratorio")
 
 st.sidebar.write(f"Benvenuto, **{st.session_state.username}** ({st.session_state.ruolo})")
@@ -922,6 +923,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
