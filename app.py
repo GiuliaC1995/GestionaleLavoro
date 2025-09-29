@@ -363,17 +363,17 @@ if dark_mode:
 # Cambio password
 # =====================================
 st.sidebar.markdown("---")
-if st.sidebar.button("🔑 Cambia password"):
+if st.sidebar.button("🔑 Cambia password", key="btn_pw_sidebar"):
     st.session_state.show_pw_change = True
 
 if st.session_state.get("show_pw_change", False):
     st.subheader("🔑 Cambia la tua password")
 
-    old_pw = st.text_input("Password attuale", type="password", key="old_pw")
-    new_pw = st.text_input("Nuova password", type="password", key="new_pw")
-    confirm_pw = st.text_input("Conferma nuova password", type="password", key="confirm_pw")
+    old_pw = st.text_input("Password attuale", type="password", key="old_pw_input")
+    new_pw = st.text_input("Nuova password", type="password", key="new_pw_input")
+    confirm_pw = st.text_input("Conferma nuova password", type="password", key="confirm_pw_input")
 
-    if st.button("Salva nuova password"):
+    if st.button("Salva nuova password", key="save_pw_btn"):
         dfu = st.session_state.df_utenti
         user_row = dfu[dfu["NomeUtente"] == st.session_state.username]
 
@@ -398,6 +398,7 @@ if st.session_state.get("show_pw_change", False):
                 st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
 
             st.session_state.show_pw_change = False
+
             
 # =====================================
 # Navigazione per ruolo
@@ -1083,6 +1084,7 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
