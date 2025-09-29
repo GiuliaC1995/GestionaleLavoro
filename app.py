@@ -274,24 +274,6 @@ if st.session_state.logged_in:
     st.markdown(f"### Benvenuto **{st.session_state.username}**!👋")
     st.write("Questo è il gestionale del laboratorio. Usa il menu a sinistra per navigare tra le sezioni.")
 
-    # Pulsanti rapidi
-    st.markdown("### Accesso rapido")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("📌 Inserisci Attività"):
-            st.session_state["nav_home"] = "inserisci"
-            st.rerun()
-    with col2:
-        if st.button("📊 Dashboard"):
-            st.session_state["nav_home"] = "dashboard"
-            st.rerun()
-    with col3:
-        if st.button("⚙️ Profilo"):
-            st.session_state.show_pw_change = True
-            st.rerun()
-
-    st.markdown("---")
-
     # KPI cards di esempio (totali generali)
     st.markdown("### 📈 Panoramica rapida")
     df_user = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
@@ -990,6 +972,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
