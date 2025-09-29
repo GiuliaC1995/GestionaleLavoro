@@ -629,6 +629,7 @@ if st.session_state.ruolo == "utente":
                         st.warning(f"Eliminazione salvata localmente ma non su Google Sheets: {e}")
                     st.success("🗑️ Attività eliminata!")
                     st.rerun()
+                    
     # ---------- ELENCO ----------
     elif scelta_pagina == "📑 Elenco attività":
         st.subheader("📑 Le mie attività - elenco")
@@ -831,7 +832,21 @@ if st.session_state.ruolo == "utente":
                     st.success("✅ Password cambiata e salvata su Google Sheets!")
                 except Exception as e:
                     st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
+if st.sidebar.button("🔄 Sincronizza adesso"):
+    sync_now()
+if st.sidebar.button("🚪 Logout"):
+    try:
+        sync_now()
+    except:
+        pass
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.ruolo = ""
+    st.rerun()
 
+#---------------------------#
+#------------CAPO-----------#
+#---------------------------#
 
 # ---------- HOME ----------
 if scelta_pagina_capo == "🏠 Home":
@@ -874,7 +889,6 @@ if scelta_pagina_capo == "🏠 Home":
         st.dataframe(df_recent)
 
 
-
 if st.sidebar.button("🔄 Sincronizza adesso"):
     sync_now()
 if st.sidebar.button("🚪 Logout"):
@@ -886,6 +900,7 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
