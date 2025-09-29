@@ -1032,3 +1032,4 @@ elif st.session_state.ruolo == "capo":
 
 
 
+
