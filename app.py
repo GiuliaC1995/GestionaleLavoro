@@ -411,10 +411,9 @@ if st.session_state.ruolo == "utente":
     )
     
     # ---------- HOME ----------
-    if st.session_state.logged_in:
-        # Messaggio di benvenuto
+    if scelta_pagina == "🏠 Home":
         st.markdown(f"### Benvenuto **{st.session_state.username}**!👋")
-        st.write("Questo è il gestionale del laboratorio. Usa il menu a sinistra per navigare tra le sezioni.")
+        st.write("Questa è la panoramica generale delle tue attività.")
 
         # KPI cards di esempio (totali generali)
         st.markdown("### 📈 Panoramica rapida")
@@ -451,13 +450,14 @@ if st.session_state.ruolo == "utente":
 
         st.markdown("---")
 
-    # Ultime attività
-    st.markdown("### 🕑 Ultime attività")
-    if not df_user.empty:
-        df_recent = df_user.sort_values("Data", ascending=False).head(5)[["Data","MacroAttivita","Attivita","Note"]]
-        st.dataframe(df_recent)
-    else:
-        st.info("Nessuna attività da mostrare.")
+        # Ultime attività
+        st.markdown("### 🕑 Ultime attività")
+        if not df_user.empty:
+            df_recent = df_user.sort_values("Data", ascending=False).head(5)[["Data","MacroAttivita","Attivita","Note"]]
+            st.dataframe(df_recent)
+        else:
+            st.info("Nessuna attività da mostrare.")
+
             
     # ---------- INSERISCI ----------
     elif scelta_pagina == "➕ Inserisci attività":
@@ -996,3 +996,4 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
