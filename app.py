@@ -449,11 +449,38 @@ if st.session_state.ruolo == "utente":
     # Menu utente
     scelta_pagina = st.sidebar.radio(
         "📌 Menu utente",
-        ["➕ Inserisci attività", "✏️ Modifica attività", "📑 Elenco attività", "📊 Riepilogo e Grafici"]
+        ["🏠 Home","➕ Inserisci attività", "✏️ Modifica attività", "📑 Elenco attività", "📊 Riepilogo e Grafici","⚙️ Profilo"],
+        index=0
     )
+    
+    # ---------- HOME ----------
+    if scelta_pagina == "🏠 Home":
+        st.subheader(f"👋 Benvenuto {st.session_state.username}!")
+        st.write("Questa è la panoramica generale delle tue attività.")
 
+        df_user = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
+        if not df_user.empty:
+            # KPI rapidi
+            tot_ore = df_user["Ore"].fillna(0).sum() + df_user["Minuti"].fillna(0).sum()/60
+            tot_campioni = df_user["NumCampioni"].fillna(0).sum()
+            tot_referti = df_user["NumReferti"].fillna(0).sum()
+
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.metric("⏱️ Ore totali", f"{tot_ore:.1f}")
+            with c2:
+                st.metric("🧪 Campioni", int(tot_campioni))
+            with c3:
+                st.metric("📄 Referti", int(tot_referti))
+
+            st.markdown("### 🕑 Ultime attività")
+            df_recent = df_user.sort_values("Data", ascending=False).head(5)[["Data","MacroAttivita","Attivita","Note"]]
+            st.dataframe(df_recent)
+        else:
+            st.info("Nessuna attività registrata.")
+            
     # ---------- INSERISCI ----------
-    if scelta_pagina == "➕ Inserisci attività":
+    elif scelta_pagina == "➕ Inserisci attività":
         st.subheader("➕ Inserisci nuova attività")
 
         # Macro → Tipologia → Attività
@@ -792,6 +819,39 @@ if st.session_state.ruolo == "utente":
                     st.info("Nessun campione registrato nel periodo selezionato.")
             else:
                 st.info("Nessuna attività di accettazione nel periodo selezionato.")
+                
+    # ---------- PROFILO ----------
+    elif scelta_pagina == "⚙️ Profilo":
+        st.subheader("🔑 Cambia la tua password")
+
+        old_pw = st.text_input("Password attuale", type="password", key="old_pw")
+        new_pw = st.text_input("Nuova password", type="password", key="new_pw")
+        confirm_pw = st.text_input("Conferma nuova password", type="password", key="confirm_pw")
+
+        if st.button("Salva nuova password"):
+            dfu = st.session_state.df_utenti
+            user_row = dfu[dfu["NomeUtente"] == st.session_state.username]
+
+            if user_row.empty:
+                st.error("Utente non trovato.")
+            elif old_pw != user_row.iloc[0]["Password"]:
+                st.error("❌ La password attuale non è corretta.")
+            elif new_pw != confirm_pw:
+                st.error("❌ Le nuove password non coincidono.")
+            elif len(new_pw) < 6:
+                st.error("❌ La password deve avere almeno 6 caratteri.")
+            else:
+                st.session_state.df_utenti.loc[
+                    st.session_state.df_utenti["NomeUtente"] == st.session_state.username, "Password"
+                ] = new_pw
+
+                # Salvo subito su Google Sheets
+                try:
+                    save_utenti(st.session_state.ws_utenti, st.session_state.df_utenti)
+                    st.success("✅ Password cambiata e salvata su Google Sheets!")
+                except Exception as e:
+                    st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
+
 
 # =====================================
 # Area CAPO (Admin)
@@ -956,6 +1016,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
