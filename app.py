@@ -450,51 +450,18 @@ if st.session_state.get("show_pw_change", False):
             st.session_state.show_pw_change = False
             
 # =====================================
-# Navigazione per ruolo (utente)
+# Navigazione per ruolo
 # =====================================
 if st.session_state.ruolo == "utente":
-
-    # Sidebar menu personalizzato
-    st.sidebar.markdown(
-        """
-        <style>
-        .menu a {
-            display: block;
-            padding: 10px 15px;
-            color: #2c3e50;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        .menu a:hover {
-            background-color: #f0f0f0;
-            border-radius: 5px;
-        }
-        .menu a.active {
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
-        }
-        </style>
-        <div class="menu">
-            <a href="?page=home">🏠 Home</a>
-            <a href="?page=inserisci">➕ Inserisci attività</a>
-            <a href="?page=modifica">✏️ Modifica attività</a>
-            <a href="?page=elenco">📑 Elenco attività</a>
-            <a href="?page=grafici">📊 Riepilogo e Grafici</a>
-            <a href="?page=profilo">⚙️ Profilo</a>
-        </div>
-        """,
-        unsafe_allow_html=True
+    # Menu utente
+    scelta_pagina = st.sidebar.radio(
+        "📌 Menu utente",
+        ["🏠 Home","➕ Inserisci attività", "✏️ Modifica attività", "📑 Elenco attività", "📊 Riepilogo e Grafici","⚙️ Profilo"],
+        index=0
     )
-
-    # Gestione navigazione con query string
-    query_params = st.experimental_get_query_params()
-    page = query_params.get("page", ["home"])[0]
-
+    
     # ---------- HOME ----------
-    if page == "home":
+    if scelta_pagina == "🏠 Home":
         st.subheader(f"👋 Benvenuto {st.session_state.username}!")
         st.write("Questa è la panoramica generale delle tue attività.")
 
@@ -518,10 +485,9 @@ if st.session_state.ruolo == "utente":
             st.dataframe(df_recent)
         else:
             st.info("Nessuna attività registrata.")
-
             
     # ---------- INSERISCI ----------
-    elif page == "inserisci":
+    elif scelta_pagina == "➕ Inserisci attività":
         st.subheader("➕ Inserisci nuova attività")
 
         # Macro → Tipologia → Attività
@@ -590,9 +556,8 @@ if st.session_state.ruolo == "utente":
                     st.success("✅ Attività salvata!")
 
     # ---------- MODIFICA ----------
-    elif page == "modifica":
+    elif scelta_pagina == "✏️ Modifica attività":
         st.subheader("✏️ Modifica attività esistente")
-        
         df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
         if df_mio.empty:
             st.info("Nessuna attività registrata.")
@@ -692,9 +657,8 @@ if st.session_state.ruolo == "utente":
                     st.success("🗑️ Attività eliminata!")
                     st.rerun()
     # ---------- ELENCO ----------
-    elif page == "elenco":
+    elif scelta_pagina == "📑 Elenco attività":
         st.subheader("📑 Le mie attività - elenco")
-        
         df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username].copy()
         if df_mio.empty:
             st.info("Nessuna attività registrata.")
@@ -746,7 +710,7 @@ if st.session_state.ruolo == "utente":
                 )
 
     # ---------- GRAFICI ----------
-    elif page == "grafici":
+    elif scelta_pagina == "📊 Riepilogo e Grafici":
         st.subheader("📊 Riepilogo attività personali")
 
         df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
@@ -864,8 +828,8 @@ if st.session_state.ruolo == "utente":
                 st.info("Nessuna attività di accettazione nel periodo selezionato.")
                 
     # ---------- PROFILO ----------
-    elif page == "profilo":
-        st.subheader("⚙️ Profilo – Cambia la tua password")
+    elif scelta_pagina == "⚙️ Profilo":
+        st.subheader("🔑 Cambia la tua password")
 
         old_pw = st.text_input("Password attuale", type="password", key="old_pw")
         new_pw = st.text_input("Nuova password", type="password", key="new_pw")
@@ -1059,10 +1023,6 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
-
-
-
-
 
 
 
