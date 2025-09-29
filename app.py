@@ -849,7 +849,7 @@ elif st.session_state.ruolo == "capo":
 
     # ---------- HOME ----------
     if scelta_pagina_capo == "🏠 Home":
-        st.subheader(### f"Benvenuto {st.session_state.username}! 👋 ")
+        st.subheader(f"Benvenuto {st.session_state.username}! 👋 ")
         st.write("Qui puoi avere una panoramica generale sulle attività di tutti gli utenti.")
 
         if df_all.empty:
@@ -1037,6 +1037,7 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
