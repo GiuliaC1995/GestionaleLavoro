@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import altair as alt
 
 # =====================================
 # Config Google Sheets
@@ -687,7 +688,16 @@ if st.session_state.ruolo == "utente":
             ore_macro["Ore"] = pd.to_numeric(ore_macro["Ore"], errors="coerce").fillna(0)
             ore_macro = ore_macro.groupby("MacroAttivita")["Ore"].sum()
             if not ore_macro.empty:
-                st.bar_chart(ore_macro)
+                chart = alt.Chart(ore_macro.reset_index()).mark_bar().encode(
+                    x=alt.X("MacroAttivita:N", sort='-y'),
+                    y="Ore:Q",
+                    color=alt.value("#4caf50")  # verde
+                ).properties(
+                    width=600,
+                    height=400
+                )
+                st.altair_chart(chart, use_container_width=True)
+                
             else:
                 st.info("Nessuna ora registrata nel periodo selezionato.")
 
@@ -697,7 +707,14 @@ if st.session_state.ruolo == "utente":
                 referti_counts = df_ref["Tipologia"].value_counts().reindex(
                     ["Compilazione referti", "Rilettura e validazione referti"]
                 ).fillna(0)
-                st.bar_chart(referti_counts)
+                
+                chart_ref = alt.Chart(referti_counts.reset_index()).mark_bar().encode(
+                    x=alt.X("index:N", title="Tipologia"),
+                    y="Tipologia:Q",
+                    color=alt.value("#ff9800")  # arancione
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_ref, use_container_width=True)
+
             else:
                 st.info("Nessun referto registrato nel periodo selezionato.")
 
@@ -717,7 +734,12 @@ if st.session_state.ruolo == "utente":
                 )
                 serie_plot = serie_accettazione[["Interni", "Esterni"]].fillna(0)
                 if serie_plot.sum() > 0:
-                    st.bar_chart(serie_plot)
+                    chart_acc = alt.Chart(serie_plot.reset_index()).mark_bar().encode(
+                       x=alt.X("TipoAcc:N", title="Tipo di accettazione"),
+                       y="NumCampioni:Q",
+                       color=alt.value("#9c27b0")  # viola
+                    ).properties(width=600, height=400)
+                    st.altair_chart(chart_acc, use_container_width=True)
                 else:
                     st.info("Nessun campione registrato nel periodo selezionato.")
             else:
@@ -769,18 +791,33 @@ elif st.session_state.ruolo == "capo":
         if not df_ref.empty:
             st.markdown("**Referti per tipologia**")
             ref_counts = df_ref["Tipologia"].value_counts()
-            st.bar_chart(ref_counts)
+            chart_admin_ref = alt.Chart(ref_counts.reset_index()).mark_bar().encode(
+               x=alt.X("index:N", title="Tipologia"),
+               y="Tipologia:Q",
+               color=alt.value("#03a9f4")  # azzurro
+            ).properties(width=600, height=400)
+            st.altair_chart(chart_admin_ref, use_container_width=True)
 
             st.markdown("**Referti per malattia**")
             ref_mal = df_ref["TipoMalattiaRef"].value_counts()
-            st.bar_chart(ref_mal)
+            chart_admin_ref_mal = alt.Chart(ref_mal.reset_index()).mark_bar().encode(
+              x=alt.X("index:N", title="Malattia"),
+              y="TipoMalattiaRef:Q",
+              color=alt.value("#f44336")  # rosso
+            ).properties(width=600, height=400)
+            st.altair_chart(chart_admin_ref_mal, use_container_width=True)
 
         # Suddivisione campioni per malattia
         df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
         if not df_acc.empty:
             st.markdown("**Campioni per malattia**")
             camp_mal = df_acc["TipoMalattia"].value_counts()
-            st.bar_chart(camp_mal)
+            chart_admin_camp = alt.Chart(camp_mal.reset_index()).mark_bar().encode(
+                x=alt.X("index:N", title="Malattia"),
+                y="TipoMalattia:Q",
+                color=alt.value("#00bcd4")  # verde acqua
+            ).properties(width=600, height=400)
+            st.altair_chart(chart_admin_camp, use_container_width=True)
 
         st.markdown("---")
 
@@ -800,17 +837,37 @@ elif st.session_state.ruolo == "capo":
 
             st.markdown("**Ore per MacroAttività**")
             ore_macro = df_user.groupby("MacroAttivita")["Ore"].sum()
-            st.bar_chart(ore_macro)
+            
+            chart = alt.Chart(ore_macro.reset_index()).mark_bar().encode(
+                x=alt.X("MacroAttivita:N", sort='-y'),
+                y="Ore:Q",
+                color=alt.value("#4caf50")  # verde
+            ).properties(width=600, height=400)
+            st.altair_chart(chart, use_container_width=True)
 
             st.markdown("**Numero referti per tipologia**")
             ref_user = df_user[df_user["MacroAttivita"] == "REFERTAZIONE"]
             if not ref_user.empty:
-                st.bar_chart(ref_user["Tipologia"].value_counts())
+                ref_user_counts = ref_user["Tipologia"].value_counts().reset_index()
+                
+                chart_admin_ref_user = alt.Chart(ref_user_counts).mark_bar().encode(
+                    x=alt.X("index:N", title="Tipologia"),
+                    y="Tipologia:Q",
+                    color=alt.value("#e91e63")  # rosa
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_admin_ref_user, use_container_width=True)
 
             st.markdown("**Campioni per malattia**")
             camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"]
             if not camp_user.empty:
-                st.bar_chart(camp_user["TipoMalattia"].value_counts())
+                camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
+                
+                chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
+                    x=alt.X("index:N", title="Malattia"),
+                    y="TipoMalattia:Q",
+                    color=alt.value("#3f51b5")  # indaco
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_admin_camp_user, use_container_width=True)
 
         st.markdown("---")
 
@@ -835,11 +892,21 @@ elif st.session_state.ruolo == "capo":
             st.dataframe(df_filtro.sort_values("Data", ascending=False))
 
             st.markdown("**Referti per utente**")
-            st.bar_chart(df_filtro.groupby("NomeUtente")["NumReferti"].sum())
+            ref_utenti = df_filtro.groupby("NomeUtente")["NumReferti"].sum().reset_index()
+            chart_ref_utenti = alt.Chart(ref_utenti).mark_bar().encode(
+                x=alt.X("NomeUtente:N", title="Utente"),
+                y="NumReferti:Q",
+                color=alt.value("#8bc34a")  # verde lime
+            ).properties(width=600, height=400)
+            st.altair_chart(chart_ref_utenti, use_container_width=True)
 
             st.markdown("**Campioni per utente**")
-            st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
-
-
+            camp_utenti = df_filtro.groupby("NomeUtente")["NumCampioni"].sum().reset_index()
+            chart_camp_utenti = alt.Chart(camp_utenti).mark_bar().encode(
+                x=alt.X("NomeUtente:N", title="Utente"),
+                y="NumCampioni:Q",
+                color=alt.value("#ff5722")  # arancione scuro
+            ).properties(width=600, height=400)
+            st.altair_chart(chart_camp_utenti, use_container_width=True)
 
 
