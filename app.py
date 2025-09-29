@@ -274,7 +274,7 @@ if dark_mode:
         """
         <style>
         /* Sfondo principale */
-        .main {
+        .main, .block-container {
             background-color: #121212 !important;
             color: #e0e0e0 !important;
         }
@@ -285,13 +285,8 @@ if dark_mode:
             color: #e0e0e0 !important;
         }
 
-        /* Titoli */
-        h1, h2, h3, h4, h5, h6 {
-            color: #ffffff !important;
-        }
-
-        /* Testo */
-        .css-10trblm, .css-16huue1, p, span, label {
+        /* Titoli e testo */
+        h1, h2, h3, h4, h5, h6, p, label, span, div {
             color: #e0e0e0 !important;
         }
 
@@ -304,26 +299,33 @@ if dark_mode:
         }
         .stButton>button:hover {
             background-color: #444444 !important;
-            color: #ffffff !important;
         }
 
-        /* Input box */
-        .stTextInput>div>div>input, 
+        /* Input e selectbox */
+        input, textarea, select, .stTextInput>div>div>input, 
         .stNumberInput input, 
         .stTextArea textarea,
-        .stSelectbox div[data-baseweb="select"] {
+        .stSelectbox div[data-baseweb="select"],
+        .stDateInput input,
+        .stTimeInput input {
             background-color: #1e1e1e !important;
             color: #ffffff !important;
             border: 1px solid #555555 !important;
         }
 
-        /* Tabelle e dataframe */
-        .stDataFrame, .css-1k0ckh2 {
+        /* Dropdown options */
+        div[data-baseweb="select"] > div {
             background-color: #1e1e1e !important;
             color: #ffffff !important;
         }
 
-        /* Metriche personalizzate */
+        /* Tabelle e dataframe */
+        .stDataFrame, .stTable, .css-1k0ckh2 {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+        }
+
+        /* Metriche personalizzate (KPI cards) */
         div[style*="background-color:#e8f5e9"],
         div[style*="background-color:#e3f2fd"],
         div[style*="background-color:#fff3e0"] {
@@ -837,6 +839,7 @@ elif st.session_state.ruolo == "capo":
 
             st.markdown("**Campioni per utente**")
             st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
+
 
 
 
