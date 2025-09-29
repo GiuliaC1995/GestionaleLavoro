@@ -257,6 +257,13 @@ if not st.session_state.logged_in:
             st.error("Nome utente o password errati")
     st.stop()
 
+# --- Titolo con logo (dopo login) ---
+col1, col2 = st.columns([1, 6])
+with col1:
+    st.image("fsl.png", width=50)  # logo piccolo
+with col2:
+    st.title("SmartLab")
+
 # =====================================
 # Sidebar: info utente e azioni
 # =====================================
@@ -913,6 +920,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
