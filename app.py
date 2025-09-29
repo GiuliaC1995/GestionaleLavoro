@@ -275,7 +275,7 @@ if st.session_state.logged_in:
     st.write("Questo è il gestionale del laboratorio. Usa il menu a sinistra per navigare tra le sezioni.")
 
     # Pulsanti rapidi
-    st.markdown("### 🚀 Accesso rapido")
+    st.markdown("### Accesso rapido")
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("📌 Inserisci Attività"):
@@ -343,7 +343,6 @@ if st.session_state.logged_in:
 st.sidebar.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/fsl.png", use_container_width=True)
 st.sidebar.markdown("## SmartLab – Gestionale Laboratorio")
 
-st.sidebar.write(f"Benvenuto, **{st.session_state.username}** ({st.session_state.ruolo})")
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ℹ️ About")
 st.sidebar.info("""
@@ -991,3 +990,4 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
