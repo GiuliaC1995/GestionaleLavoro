@@ -240,12 +240,12 @@ if "df_att" not in st.session_state:
 # =====================================
 # UI - Titolo e Login
 # =====================================
-if st.session_state.logged_in:
-    col1, col2 = st.columns([1, 6])
-    with col1:
-        st.image("fsl.png", width=50)  # logo piccolo
-    with col2:
-        st.title("SmartLab")
+# Titolo con logo (sempre visibile, anche prima del login)
+col1, col2 = st.columns([1, 6])
+with col1:
+    st.image("fsl.png", width=80)  # logo più grande
+with col2:
+    st.title("SmartLab")
 
 if not st.session_state.logged_in:
     st.subheader("Login")
@@ -918,6 +918,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
