@@ -844,49 +844,232 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.ruolo = ""
     st.rerun()
 
-#---------------------------#
-#------------CAPO-----------#
-#---------------------------#
+# =====================================
+# Area CAPO (Admin)
+# =====================================
+elif st.session_state.ruolo == "capo":
 
-# ---------- HOME ----------
-if scelta_pagina_capo == "🏠 Home":
-    st.subheader(f"👋 Benvenuto capo {st.session_state.username}!")
-    st.write("Qui puoi avere una panoramica generale sulle attività di tutti gli utenti.")
+    # Menu capo
+    scelta_pagina_capo = st.sidebar.radio(
+        "📌 Menu capo",
+        ["🏠 Home", "📊 Dashboard", "👩‍🔬 Monitoraggio per Utente", "🧬 Monitoraggio per Attività/Malattia"],
+        index=0
+    )
 
-    if df_all.empty:
-        st.info("Nessuna attività registrata dagli utenti.")
-    else:
-        tot_ore = df_all["Ore"].fillna(0).sum() + df_all["Minuti"].fillna(0).sum()/60
-        tot_campioni = df_all["NumCampioni"].fillna(0).sum()
-        tot_referti = df_all["NumReferti"].fillna(0).sum()
+    df_all = st.session_state.df_att.copy()
 
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.markdown(f"""
-            <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
-            <h3>⏱️ Ore Totali</h3>
-            <h2>{tot_ore:.1f}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-        with c2:
-            st.markdown(f"""
-            <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
-            <h3>🧪 Campioni</h3>
-            <h2>{int(tot_campioni)}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-        with c3:
-            st.markdown(f"""
-            <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
-            <h3>📄 Referti</h3>
-            <h2>{int(tot_referti)}</h2>
-            </div>
-            """, unsafe_allow_html=True)
+    # ---------- HOME ----------
+    if scelta_pagina_capo == "🏠 Home":
+        st.subheader(f"👋 Benvenuto capo {st.session_state.username}!")
+        st.write("Qui puoi avere una panoramica generale sulle attività di tutti gli utenti.")
 
-        st.markdown("---")
-        st.markdown("### Ultime attività registrate")
-        df_recent = df_all.sort_values("Data", ascending=False).head(10)[["Data","NomeUtente","MacroAttivita","Attivita","Note"]]
-        st.dataframe(df_recent)
+        if df_all.empty:
+            st.info("Nessuna attività registrata dagli utenti.")
+        else:
+            tot_ore = df_all["Ore"].fillna(0).sum() + df_all["Minuti"].fillna(0).sum()/60
+            tot_campioni = df_all["NumCampioni"].fillna(0).sum()
+            tot_referti = df_all["NumReferti"].fillna(0).sum()
+
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.markdown(f"""
+                <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
+                <h3>⏱️ Ore Totali</h3>
+                <h2>{tot_ore:.1f}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with c2:
+                st.markdown(f"""
+                <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
+                <h3>🧪 Campioni</h3>
+                <h2>{int(tot_campioni)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with c3:
+                st.markdown(f"""
+                <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
+                <h3>📄 Referti</h3>
+                <h2>{int(tot_referti)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("---")
+            st.markdown("### Ultime attività registrate")
+            df_recent = df_all.sort_values("Data", ascending=False).head(10)[["Data","NomeUtente","MacroAttivita","Attivita","Note"]]
+            st.dataframe(df_recent)
+
+    # ---------- DASHBOARD ----------
+    elif scelta_pagina_capo == "📊 Dashboard":
+        st.subheader("📊 Dashboard Amministratore")
+
+        if df_all.empty:
+            st.info("Nessuna attività registrata dagli utenti.")
+        else:
+            if not pd.api.types.is_datetime64_any_dtype(df_all["Data"]):
+                df_all["Data"] = pd.to_datetime(df_all["Data"], errors="coerce")
+
+            # --- FILTRO PERIODO ---
+            data_min = df_all["Data"].dropna().min().date()
+            data_max = df_all["Data"].dropna().max().date()
+            col1, col2 = st.columns(2)
+            with col1:
+                start_date = st.date_input("Da", data_min, key="admin_start")
+            with col2:
+                end_date = st.date_input("A", data_max, key="admin_end")
+
+            df_periodo = df_all[
+                df_all["Data"].notna()
+                & (df_all["Data"].dt.date >= start_date)
+                & (df_all["Data"].dt.date <= end_date)
+            ]
+
+            # =========================
+            # Panoramica Campioni e Referti
+            # =========================
+            st.markdown("### 📦 Panoramica Campioni e Referti")
+            tot_campioni = df_periodo["NumCampioni"].fillna(0).sum()
+            tot_referti = df_periodo["NumReferti"].fillna(0).sum()
+
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown(f"""
+                <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
+                <h3>🧪 Campioni Totali</h3>
+                <h2>{int(tot_campioni)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with c2:
+                st.markdown(f"""
+                <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
+                <h3>📄 Referti Totali</h3>
+                <h2>{int(tot_referti)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Suddivisione referti per tipo
+            df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
+            if not df_ref.empty:
+                st.markdown("**Referti per tipologia**")
+                ref_counts = df_ref["Tipologia"].value_counts()
+                chart_admin_ref = alt.Chart(ref_counts.reset_index()).mark_bar().encode(
+                   x=alt.X("index:N", title="Tipologia"),
+                   y="Tipologia:Q",
+                   color=alt.value("#03a9f4")  # azzurro
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_admin_ref, use_container_width=True)
+
+                st.markdown("**Referti per malattia**")
+                ref_mal = df_ref["TipoMalattiaRef"].value_counts()
+                chart_admin_ref_mal = alt.Chart(ref_mal.reset_index()).mark_bar().encode(
+                  x=alt.X("index:N", title="Malattia"),
+                  y="TipoMalattiaRef:Q",
+                  color=alt.value("#f44336")  # rosso
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_admin_ref_mal, use_container_width=True)
+
+            # Suddivisione campioni per malattia
+            df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
+            if not df_acc.empty:
+                st.markdown("**Campioni per malattia**")
+                camp_mal = df_acc["TipoMalattia"].value_counts()
+                chart_admin_camp = alt.Chart(camp_mal.reset_index()).mark_bar().encode(
+                    x=alt.X("index:N", title="Malattia"),
+                    y="TipoMalattia:Q",
+                    color=alt.value("#00bcd4")  # verde acqua
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_admin_camp, use_container_width=True)
+
+    # ---------- MONITORAGGIO PER UTENTE ----------
+    elif scelta_pagina_capo == "👩‍🔬 Monitoraggio per Utente":
+        st.subheader("👩‍🔬 Monitoraggio per Utente")
+
+        if df_all.empty:
+            st.info("Nessuna attività registrata dagli utenti.")
+        else:
+            utente_sel = st.selectbox("Seleziona utente", sorted(df_all["NomeUtente"].dropna().unique()))
+            df_user = df_all[df_all["NomeUtente"] == utente_sel]
+
+            if df_user.empty:
+                st.info(f"Nessuna attività per {utente_sel}.")
+            else:
+                tot_ore = df_user["Ore"].fillna(0).sum() + df_user["Minuti"].fillna(0).sum() / 60
+                st.markdown(f"""
+                <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
+                <h3>⏱️ Ore Totali di {utente_sel}</h3>
+                <h2>{tot_ore:.1f}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown("**Ore per MacroAttività**")
+                ore_macro = df_user.groupby("MacroAttivita")["Ore"].sum()
+                chart = alt.Chart(ore_macro.reset_index()).mark_bar().encode(
+                    x=alt.X("MacroAttivita:N", sort='-y'),
+                    y="Ore:Q",
+                    color=alt.value("#4caf50")
+                ).properties(width=600, height=400)
+                st.altair_chart(chart, use_container_width=True)
+
+                st.markdown("**Numero referti per tipologia**")
+                ref_user = df_user[df_user["MacroAttivita"] == "REFERTAZIONE"]
+                if not ref_user.empty:
+                    ref_user_counts = ref_user["Tipologia"].value_counts().reset_index()
+                    chart_admin_ref_user = alt.Chart(ref_user_counts).mark_bar().encode(
+                        x=alt.X("index:N", title="Tipologia"),
+                        y="Tipologia:Q",
+                        color=alt.value("#e91e63")  # rosa
+                    ).properties(width=600, height=400)
+                    st.altair_chart(chart_admin_ref_user, use_container_width=True)
+
+                st.markdown("**Campioni per malattia**")
+                camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"]
+                if not camp_user.empty:
+                    camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
+                    chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
+                        x=alt.X("index:N", title="Malattia"),
+                        y="TipoMalattia:Q",
+                        color=alt.value("#3f51b5")  # indaco
+                    ).properties(width=600, height=400)
+                    st.altair_chart(chart_admin_camp_user, use_container_width=True)
+
+    # ---------- MONITORAGGIO PER ATTIVITÀ/MALATTIA ----------
+    elif scelta_pagina_capo == "🧬 Monitoraggio per Attività/Malattia":
+        st.subheader("🧬 Monitoraggio per Attività/Malattia")
+
+        if df_all.empty:
+            st.info("Nessuna attività registrata.")
+        else:
+            filtro_att = st.selectbox(
+                "Seleziona una malattia/attività da monitorare",
+                sorted(set(df_all["TipoMalattia"].dropna().unique()) | set(df_all["TipoMalattiaRef"].dropna().unique()))
+            )
+
+            df_filtro = df_all[
+                (df_all["TipoMalattia"] == filtro_att) | (df_all["TipoMalattiaRef"] == filtro_att)
+            ]
+
+            if df_filtro.empty:
+                st.info(f"Nessun dato trovato per '{filtro_att}'.")
+            else:
+                st.markdown(f"**Dettaglio attività relative a '{filtro_att}'**")
+                st.dataframe(df_filtro.sort_values("Data", ascending=False))
+
+                st.markdown("**Referti per utente**")
+                ref_utenti = df_filtro.groupby("NomeUtente")["NumReferti"].sum().reset_index()
+                chart_ref_utenti = alt.Chart(ref_utenti).mark_bar().encode(
+                    x=alt.X("NomeUtente:N", title="Utente"),
+                    y="NumReferti:Q",
+                    color=alt.value("#8bc34a")  # verde lime
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_ref_utenti, use_container_width=True)
+
+                st.markdown("**Campioni per utente**")
+                camp_utenti = df_filtro.groupby("NomeUtente")["NumCampioni"].sum().reset_index()
+                chart_camp_utenti = alt.Chart(camp_utenti).mark_bar().encode(
+                    x=alt.X("NomeUtente:N", title="Utente"),
+                    y="NumCampioni:Q",
+                    color=alt.value("#ff5722")  # arancione scuro
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_camp_utenti, use_container_width=True)
 
 
 if st.sidebar.button("🔄 Sincronizza adesso"):
@@ -900,6 +1083,7 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
