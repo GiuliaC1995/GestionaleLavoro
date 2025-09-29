@@ -71,6 +71,33 @@ def sync_now():
         st.error(f"❌ Errore sincronizzazione: {e}")
 
 # =====================================
+# Config stile app
+# =====================================
+st.set_page_config(
+    page_title="SmartLab",
+    page_icon="🧬",  # favicon/emoji
+    layout="wide"
+)
+
+# CSS custom per modernizzare lo stile
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f9f9fb;
+    }
+    .stButton>button {
+        border-radius: 10px;
+        background-color: #4CAF50;
+        color: white;
+    }
+    .stButton>button:hover {
+        background-color: #45a049;
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# =====================================
 # Dati utenti (login demo)
 # =====================================
 
@@ -233,6 +260,29 @@ if not st.session_state.logged_in:
 # Sidebar: info utente e azioni
 # =====================================
 st.sidebar.write(f"Benvenuto, **{st.session_state.username}** ({st.session_state.ruolo})")
+st.sidebar.markdown("---")
+st.sidebar.markdown("### ℹ️ About")
+st.sidebar.info("""
+**SmartLab** – Gestionale Attività di Laboratorio
+Versione 1.0 – sviluppato in Python + Streamlit  
+""")
+
+# 🌙 Dark Mode switch
+dark_mode = st.sidebar.checkbox("🌙 Dark Mode")
+if dark_mode:
+    st.markdown(
+        """
+        <style>
+        .main { background-color: #121212; color: white; }
+        .stButton>button { background-color: #333; color: white; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Messaggio di benvenuto in homepage
+if st.session_state.logged_in:
+    st.markdown(f"👋 Benvenuto **{st.session_state.username}**! Usa il menu a sinistra per navigare tra le sezioni.")
 if st.sidebar.button("🔄 Sincronizza adesso"):
     sync_now()
 if st.sidebar.button("🚪 Logout"):
@@ -550,9 +600,28 @@ if st.session_state.ruolo == "utente":
             tot_referti = df_periodo["NumReferti"].fillna(0).sum()
 
             col1, col2, col3 = st.columns(3)
-            col1.metric("⏱️ Ore totali", f"{tot_ore_equivalenti:.1f}")
-            col2.metric("🧪 Campioni", int(tot_campioni))
-            col3.metric("📄 Referti", int(tot_referti))
+            with col1:
+                st.markdown(f"""
+                <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
+                <h3>⏱️ Ore Totali</h3>
+                <h2>{tot_ore_equivalenti:.1f}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
+                <h3>🧪 Campioni</h3>
+                <h2>{int(tot_campioni)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
+                <h3>📄 Referti</h3>
+                <h2>{int(tot_referti)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+
 
             # Grafici
             st.markdown("**Ore totali per MacroAttività**")
@@ -712,4 +781,5 @@ elif st.session_state.ruolo == "capo":
 
             st.markdown("**Campioni per utente**")
             st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
+
 
