@@ -273,12 +273,68 @@ if dark_mode:
     st.markdown(
         """
         <style>
-        .main { background-color: #121212; color: white; }
-        .stButton>button { background-color: #333; color: white; }
+        /* Sfondo principale */
+        .main {
+            background-color: #121212 !important;
+            color: #e0e0e0 !important;
+        }
+
+        /* Sidebar */
+        section[data-testid="stSidebar"] {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
+        }
+
+        /* Titoli */
+        h1, h2, h3, h4, h5, h6 {
+            color: #ffffff !important;
+        }
+
+        /* Testo */
+        .css-10trblm, .css-16huue1, p, span, label {
+            color: #e0e0e0 !important;
+        }
+
+        /* Bottoni */
+        .stButton>button {
+            border-radius: 10px;
+            background-color: #333333 !important;
+            color: #ffffff !important;
+            border: 1px solid #555555 !important;
+        }
+        .stButton>button:hover {
+            background-color: #444444 !important;
+            color: #ffffff !important;
+        }
+
+        /* Input box */
+        .stTextInput>div>div>input, 
+        .stNumberInput input, 
+        .stTextArea textarea,
+        .stSelectbox div[data-baseweb="select"] {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border: 1px solid #555555 !important;
+        }
+
+        /* Tabelle e dataframe */
+        .stDataFrame, .css-1k0ckh2 {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+        }
+
+        /* Metriche personalizzate */
+        div[style*="background-color:#e8f5e9"],
+        div[style*="background-color:#e3f2fd"],
+        div[style*="background-color:#fff3e0"] {
+            background-color: #2c2c2c !important;
+            color: #ffffff !important;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
+
 
 # Messaggio di benvenuto in homepage
 if st.session_state.logged_in:
@@ -781,5 +837,6 @@ elif st.session_state.ruolo == "capo":
 
             st.markdown("**Campioni per utente**")
             st.bar_chart(df_filtro.groupby("NomeUtente")["NumCampioni"].sum())
+
 
 
