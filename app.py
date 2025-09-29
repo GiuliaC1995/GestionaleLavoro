@@ -244,7 +244,7 @@ if "df_att" not in st.session_state:
 st.markdown(
     """
     <div style="display:flex; align-items:center;">
-        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/fsl.png" 
+        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/icons8-biotecnologia-100.png" 
              alt="Logo" style="width:80px; margin-right:15px;">
         <h1 style="margin:0;">SmartLab</h1>
     </div>
@@ -923,6 +923,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
