@@ -266,6 +266,74 @@ if not st.session_state.logged_in:
         else:
             st.error("Nome utente o password errati")
     st.stop()
+# =====================================
+# Homepage (dopo login)
+# =====================================
+if st.session_state.logged_in:
+    # Messaggio di benvenuto
+    st.markdown(f"## 👋 Benvenuto **{st.session_state.username}**!")
+    st.write("Questo è il gestionale del laboratorio. Usa il menu a sinistra per navigare tra le sezioni.")
+
+    # Pulsanti rapidi
+    st.markdown("### 🚀 Accesso rapido")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("📌 Inserisci Attività"):
+            st.session_state["nav_home"] = "inserisci"
+            st.rerun()
+    with col2:
+        if st.button("📊 Dashboard"):
+            st.session_state["nav_home"] = "dashboard"
+            st.rerun()
+    with col3:
+        if st.button("⚙️ Profilo"):
+            st.session_state.show_pw_change = True
+            st.rerun()
+
+    st.markdown("---")
+
+    # KPI cards di esempio (totali generali)
+    st.markdown("### 📈 Panoramica rapida")
+    df_user = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
+    if not df_user.empty:
+        tot_ore = df_user["Ore"].fillna(0).sum() + df_user["Minuti"].fillna(0).sum()/60
+        tot_campioni = df_user["NumCampioni"].fillna(0).sum()
+        tot_referti = df_user["NumReferti"].fillna(0).sum()
+
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.markdown(f"""
+            <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
+            <h3>⏱️ Ore Totali</h3>
+            <h2>{tot_ore:.1f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"""
+            <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
+            <h3>🧪 Campioni</h3>
+            <h2>{int(tot_campioni)}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        with c3:
+            st.markdown(f"""
+            <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
+            <h3>📄 Referti</h3>
+            <h2>{int(tot_referti)}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Non ci sono ancora attività registrate.")
+
+    st.markdown("---")
+
+    # Ultime attività
+    st.markdown("### 🕑 Ultime attività")
+    if not df_user.empty:
+        df_recent = df_user.sort_values("Data", ascending=False).head(5)[["Data","MacroAttivita","Attivita","Note"]]
+        st.dataframe(df_recent)
+    else:
+        st.info("Nessuna attività da mostrare.")
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -923,13 +991,3 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
-
-
-
-
-
-
-
-
-
-
