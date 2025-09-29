@@ -271,7 +271,7 @@ if not st.session_state.logged_in:
 # =====================================
 if st.session_state.logged_in:
     # Messaggio di benvenuto
-    st.markdown(f"## 👋 Benvenuto **{st.session_state.username}**!")
+    st.markdown(f"## Benvenuto **{st.session_state.username}**!👋")
     st.write("Questo è il gestionale del laboratorio. Usa il menu a sinistra per navigare tra le sezioni.")
 
     # Pulsanti rapidi
@@ -990,4 +990,5 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
