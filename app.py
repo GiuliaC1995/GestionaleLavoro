@@ -270,7 +270,6 @@ if not st.session_state.logged_in:
 # =====================================
 # Sidebar: info utente e azioni
 # =====================================
-
 # Logo in sidebar
 st.sidebar.markdown(
     """
@@ -289,6 +288,18 @@ st.sidebar.info("""
 Versione 1.0 – sviluppato in Python + Streamlit  
 """)
 
+if st.sidebar.button("🔄 Sincronizza adesso"):
+    sync_now()
+if st.sidebar.button("🚪 Logout"):
+    try:
+        sync_now()
+    except:
+        pass
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.ruolo = ""
+    st.rerun()
+    
 # 🌙 Dark Mode switch
 dark_mode = st.sidebar.checkbox("🌙 Dark Mode")
 if dark_mode:
@@ -996,4 +1007,5 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
