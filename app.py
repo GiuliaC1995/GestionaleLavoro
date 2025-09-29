@@ -325,7 +325,7 @@ if st.session_state.logged_in:
 st.sidebar.markdown(
     """
     <div style="text-align: center;">
-        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/fsl.png" width="120">
+        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/fsl.png" width="150">
     </div>
     """,
     unsafe_allow_html=True
@@ -1023,6 +1023,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
