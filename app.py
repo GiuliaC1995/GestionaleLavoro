@@ -402,22 +402,6 @@ if dark_mode:
         unsafe_allow_html=True
     )
 
-
-# Messaggio di benvenuto in homepage
-if st.session_state.logged_in:
-    st.markdown(f"👋 Benvenuto **{st.session_state.username}**! Usa il menu a sinistra per navigare tra le sezioni.")
-if st.sidebar.button("🔄 Sincronizza adesso"):
-    sync_now()
-if st.sidebar.button("🚪 Logout"):
-    try:
-        sync_now()
-    except:
-        pass
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.session_state.ruolo = ""
-    st.rerun()
-    
 # =====================================
 # Cambio password
 # =====================================
@@ -972,6 +956,7 @@ elif st.session_state.ruolo == "capo":
                 color=alt.value("#ff5722")  # arancione scuro
             ).properties(width=600, height=400)
             st.altair_chart(chart_camp_utenti, use_container_width=True)
+
 
 
 
