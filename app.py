@@ -277,6 +277,7 @@ if not st.session_state.logged_in:
     with col2:
         st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
+        # SOLO input e bottone, senza logo/titolo
         username = st.text_input("Nome utente", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
 
@@ -292,6 +293,7 @@ if not st.session_state.logged_in:
 
         st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+
 
 
 
@@ -1083,6 +1085,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
