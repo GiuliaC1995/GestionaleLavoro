@@ -1009,15 +1009,20 @@ elif st.session_state.ruolo == "capo":
                 st.altair_chart(chart, use_container_width=True)
 
                 st.markdown("**Numero referti per tipologia**")
-                ref_user = df_user[df_user["MacroAttivita"] == "REFERTAZIONE"]
+                ref_user = df_user[df_user["MacroAttivita"] == "REFERTAZIONE"].copy()
                 if not ref_user.empty:
                     ref_user_counts = ref_user["Tipologia"].value_counts().reset_index()
+                    ref_user_counts.columns = ["Tipologia", "Conteggio"]
+
                     chart_admin_ref_user = alt.Chart(ref_user_counts).mark_bar().encode(
-                        x=alt.X("index:N", title="Tipologia"),
-                        y="Tipologia:Q",
+                        x=alt.X("Tipologia:N", title="Tipologia"),
+                        y=alt.Y("Conteggio:Q", title="Numero"),
                         color=alt.value("#e91e63")  # rosa
                     ).properties(width=600, height=400)
+
                     st.altair_chart(chart_admin_ref_user, use_container_width=True)
+                else:
+                    st.info("Nessun referto registrato per questo utente.")
 
                 st.markdown("**Campioni per malattia**")
                 camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"]
@@ -1087,6 +1092,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
