@@ -629,8 +629,17 @@ if st.session_state.ruolo == "utente":
                         save_data(st.session_state.sheet, st.session_state.df_att)
                     except Exception as e:
                         st.warning(f"Eliminazione salvata localmente ma non su Google Sheets: {e}")
-                    st.success("🗑️ Attività eliminata!")
+
+                    # Salvo un flag per mostrare il messaggio dopo il refresh
+                    st.session_state.attivita_eliminata = True
                     st.rerun()
+
+            # --- Messaggio dopo refresh ---
+            if st.session_state.get("attivita_eliminata", False):
+                st.success("✅ Attività eliminata con successo!")
+                # Resetto il flag così non rimane sempre
+                st.session_state.attivita_eliminata = False
+
                     
     # ---------- ELENCO ----------
     elif scelta_pagina == "📑 Elenco attività":
@@ -1079,6 +1088,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
