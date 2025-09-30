@@ -362,46 +362,6 @@ if dark_mode:
         unsafe_allow_html=True
     )
 
-# =====================================
-# Cambio password
-# =====================================
-st.sidebar.markdown("---")
-if st.sidebar.button("🔑 Cambia password", key="btn_pw_sidebar"):
-    st.session_state.show_pw_change = True
-
-if st.session_state.get("show_pw_change", False):
-    st.subheader("🔑 Cambia la tua password")
-
-    old_pw = st.text_input("Password attuale", type="password", key="old_pw_input")
-    new_pw = st.text_input("Nuova password", type="password", key="new_pw_input")
-    confirm_pw = st.text_input("Conferma nuova password", type="password", key="confirm_pw_input")
-
-    if st.button("Salva nuova password", key="save_pw_btn"):
-        dfu = st.session_state.df_utenti
-        user_row = dfu[dfu["NomeUtente"] == st.session_state.username]
-
-        if user_row.empty:
-            st.error("Utente non trovato.")
-        elif old_pw != user_row.iloc[0]["Password"]:
-            st.error("❌ La password attuale non è corretta.")
-        elif new_pw != confirm_pw:
-            st.error("❌ Le nuove password non coincidono.")
-        elif len(new_pw) < 6:
-            st.error("❌ La password deve avere almeno 6 caratteri.")
-        else:
-            st.session_state.df_utenti.loc[
-                st.session_state.df_utenti["NomeUtente"] == st.session_state.username, "Password"
-            ] = new_pw
-
-            # Salvo subito su Google Sheets
-            try:
-                save_utenti(st.session_state.ws_utenti, st.session_state.df_utenti)
-                st.success("✅ Password cambiata e salvata su Google Sheets!")
-            except Exception as e:
-                st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
-
-            st.session_state.show_pw_change = False
-
             
 # =====================================
 # Navigazione per ruolo
@@ -1098,6 +1058,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
