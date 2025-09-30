@@ -279,10 +279,21 @@ if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         with st.form("login_form"):
+            # CSS per dare lo stile al contenitore
+            st.markdown(
+                """
+                <style>
+                .login-box {
+                    border: 1px solid #ccc;
+                    padding: 20px;
+                    border-radius: 10px;
+                    background-color: white; /* <-- sfondo bianco */
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
             st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-
-            st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=80)
-            st.markdown("<h2 style='margin:0; color:#333;'>MedGenLab</h2>", unsafe_allow_html=True)
 
             username = st.text_input("Nome utente")
             password = st.text_input("Password", type="password")
@@ -1137,6 +1148,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
