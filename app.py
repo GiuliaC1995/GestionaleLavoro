@@ -936,6 +936,35 @@ elif st.session_state.ruolo == "capo":
 
                 st.altair_chart(chart_admin_ref_mal, use_container_width=True)
 
+            # =========================
+            # Grafico a barre sovrapposte (MacroAttività vs Ore per utente)
+            # =========================
+            st.markdown("### ⏱️ Ore per MacroAttività suddivise per Utente")
+
+            # Calcolo ore totali (ore + minuti/60)
+            df_periodo["OreTot"] = df_periodo["Ore"].fillna(0) + df_periodo["Minuti"].fillna(0) / 60
+
+            ore_macro_user = (
+                df_periodo.groupby(["MacroAttivita", "NomeUtente"])["OreTot"]
+                .sum()
+                .reset_index()
+            )
+
+            if not ore_macro_user.empty:
+                chart_macro_user = (
+                    alt.Chart(ore_macro_user)
+                    .mark_bar()
+                    .encode(
+                        x=alt.X("MacroAttivita:N", title="MacroAttività"),
+                        y=alt.Y("OreTot:Q", title="Ore totali"),
+                        color=alt.Color("NomeUtente:N", title="Utente"),
+                        tooltip=["MacroAttivita", "NomeUtente", "OreTot"]
+                    )
+                    .properties(width=700, height=400)
+                )
+                st.altair_chart(chart_macro_user, use_container_width=True)
+            else:
+                st.info("Nessuna attività nel periodo selezionato.")
 
             # Suddivisione campioni per malattia
             df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
@@ -1058,5 +1087,6 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
