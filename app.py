@@ -255,51 +255,56 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # CSS migliorato
+    # CSS stile web moderno
     st.markdown("""
         <style>
         body {
-            background: linear-gradient(135deg, #e0f7fa, #e1bee7);
+            background: #00bcd4; /* sfondo azzurro */
         }
         .login-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 80vh;
+            height: 90vh;
         }
         .login-box {
             background-color: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             width: 380px;
             text-align: center;
         }
         .login-box h2 {
-            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 24px;
+            color: #333;
         }
         .stTextInput>div>div>input {
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 0.6rem;
+            border: 1px solid #ccc;
         }
         .stButton>button {
             width: 100%;
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 0.6rem;
-            background-color: #4CAF50;
+            background-color: #2196f3;
             color: white;
             font-size: 16px;
+            border: none;
         }
         .stButton>button:hover {
-            background-color: #45a049;
+            background-color: #1976d2;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Struttura login
+    # Layout login
     st.markdown("<div class='login-container'><div class='login-box'>", unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=120)
-    st.markdown("<h2>🔑 Login</h2>", unsafe_allow_html=True)
+    st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=100)
+    st.markdown("<h2>MedGenLab</h2>", unsafe_allow_html=True)
 
     username = st.text_input("Nome utente")
     password = st.text_input("Password", type="password")
@@ -1107,6 +1112,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
