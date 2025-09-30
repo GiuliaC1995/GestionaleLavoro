@@ -260,18 +260,13 @@ if not st.session_state.logged_in:
         .stApp {
             background-color: #00bcd4;
         }
-        .login-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
         .login-box {
             background-color: white;
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            width: 380px;
+            width: 400px;
+            margin: auto;
             text-align: center;
         }
         .stButton>button {
@@ -289,34 +284,31 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # Apro il wrapper e il box
-    st.markdown("""
-        <div class="login-wrapper">
-          <div class="login-box">
-            <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif"
-                 alt="Logo DNA" style="width:80px; height:80px; margin-bottom:10px;">
-            <h2 style="margin:0; color:#333;">MedGenLab</h2>
-    """, unsafe_allow_html=True)
+    # wrapper per centrare
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        with st.container():
+            st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
-    # Questi widget ora finiscono DENTRO al box
-    username = st.text_input("Nome utente", key="login_username")
-    password = st.text_input("Password", type="password", key="login_password")
-    if st.button("Accedi", key="login_btn"):
-        ruolo = login(username, password)
-        if ruolo:
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.ruolo = ruolo
-            st.rerun()
-        else:
-            st.error("❌ Nome utente o password errati")
+            st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=80)
+            st.markdown("<h2 style='margin:0; color:#333;'>MedGenLab</h2>", unsafe_allow_html=True)
 
-    # Chiudo il div del box
-    st.markdown("</div></div>", unsafe_allow_html=True)
+            username = st.text_input("Nome utente", key="login_username")
+            password = st.text_input("Password", type="password", key="login_password")
+
+            if st.button("Accedi", key="login_btn"):
+                ruolo = login(username, password)
+                if ruolo:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.ruolo = ruolo
+                    st.rerun()
+                else:
+                    st.error("❌ Nome utente o password errati")
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
-
-
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1018,20 +1010,18 @@ elif st.session_state.ruolo == "capo":
             df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
             if not df_acc.empty:
                 st.markdown("**Campioni per malattia**")
-                camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"].copy()
-                if not camp_user.empty:
-                    camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
-                    camp_user_counts.columns = ["Malattia", "Conteggio"]
+                camp_user_counts = df_acc["TipoMalattia"].value_counts().reset_index()
+                camp_user_counts.columns = ["Malattia", "Conteggio"]
 
-                    chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
-                        x=alt.X("Malattia:N", title="Malattia"),
-                        y=alt.Y("Conteggio:Q", title="Numero"),
-                        color=alt.value("#3f51b5")  # indaco
-                    ).properties(width=600, height=400)
+                chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
+                    x=alt.X("Malattia:N", title="Malattia"),
+                    y=alt.Y("Conteggio:Q", title="Numero"),
+                    color=alt.value("#3f51b5")  # indaco
+                ).properties(width=600, height=400)
 
-                    st.altair_chart(chart_admin_camp_user, use_container_width=True)
-                else:
-                    st.info("Nessun campione registrato per questo utente.")
+                st.altair_chart(chart_admin_camp_user, use_container_width=True)
+            else:
+                st.info("Nessun campione registrato.")
 
     # ---------- MONITORAGGIO PER UTENTE ----------
     elif scelta_pagina_capo == "👩‍🔬 Monitoraggio per Utente":
@@ -1153,6 +1143,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
