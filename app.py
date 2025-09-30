@@ -253,7 +253,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 if not st.session_state.logged_in:
     st.markdown("""
         <style>
@@ -272,28 +271,23 @@ if not st.session_state.logged_in:
         .stButton>button:hover {
             background-color: #45a049;
         }
+        .login-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white; /* sfondo bianco */
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        }
         </style>
     """, unsafe_allow_html=True)
 
     # Centriamo il form
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        with st.form("login_form"):
-            # CSS per dare lo stile al contenitore
-            st.markdown(
-                """
-                <style>
-                .login-box {
-                    border: 1px solid #ccc;
-                    padding: 20px;
-                    border-radius: 10px;
-                    background-color: white; /* <-- sfondo bianco */
-                }
-                </style>
-                """
-            )
-            
+        # 👉 Apertura div
+        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
+        with st.form("login_form"):
             username = st.text_input("Nome utente")
             password = st.text_input("Password", type="password")
             login_btn = st.form_submit_button("Accedi")
@@ -308,9 +302,11 @@ if not st.session_state.logged_in:
                 else:
                     st.error("❌ Nome utente o password errati")
 
-            st.markdown("</div>", unsafe_allow_html=True)
+        # 👉 Chiusura div
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
+
 
 
 
@@ -1147,6 +1143,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
