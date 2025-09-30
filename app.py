@@ -265,7 +265,7 @@ if not st.session_state.logged_in:
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 90vh;
+            height: 100vh;
         }
         .login-box {
             background-color: white;
@@ -301,13 +301,16 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # Layout login
+    # Struttura del box
     st.markdown("<div class='login-container'><div class='login-box'>", unsafe_allow_html=True)
+
+    # Logo e titolo dentro al box
     st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=100)
     st.markdown("<h2>MedGenLab</h2>", unsafe_allow_html=True)
 
-    username = st.text_input("Nome utente")
-    password = st.text_input("Password", type="password")
+    # Campi form
+    username = st.text_input("Nome utente", key="login_username")
+    password = st.text_input("Password", type="password", key="login_password")
 
     if st.button("Accedi", key="login_btn"):
         ruolo = login(username, password)
@@ -319,8 +322,10 @@ if not st.session_state.logged_in:
         else:
             st.error("❌ Nome utente o password errati")
 
+    # Chiusura div
     st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
+
 
 
 
@@ -1112,6 +1117,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
