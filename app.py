@@ -241,21 +241,61 @@ if "df_att" not in st.session_state:
 # =====================================
 # UI - Titolo e Login
 # =====================================
-# Titolo con logo animato (sempre visibile, anche prima del login)
-st.markdown(
-    """
-    <div style="display:flex; align-items:center; justify-content:center; margin-bottom:5px;">
-        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif" 
-             alt="Logo DNA" style="width:120px; height:120px; margin-right:0px;">
-        <h1 style="margin:0; font-size:35px;">MedGenLab</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
 if not st.session_state.logged_in:
-    st.subheader("🔑 Login")
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #00bcd4;
+        }
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .login-box {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            width: 380px;
+            text-align: center;
+        }
+        .stTextInput>div>div>input {
+            border-radius: 6px;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+        }
+        .stButton>button {
+            width: 100%;
+            border-radius: 6px;
+            padding: 0.6rem;
+            background-color: #2196f3;
+            color: white;
+            font-size: 16px;
+            border: none;
+        }
+        .stButton>button:hover {
+            background-color: #1976d2;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Logo + titolo
+    st.markdown(
+        """
+        <div class="login-container">
+            <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif" 
+                 alt="Logo DNA" style="width:120px; height:120px; margin-bottom:10px;">
+            <h1 style="margin:0; font-size:35px; color:white;">MedGenLab</h1>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Box login
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
     username = st.text_input("Nome utente")
     password = st.text_input("Password", type="password")
     if st.button("Accedi", key="login_btn"):
@@ -267,6 +307,7 @@ if not st.session_state.logged_in:
             st.rerun()
         else:
             st.error("❌ Nome utente o password errati")
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 
@@ -1058,4 +1099,5 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
