@@ -414,7 +414,7 @@ if st.session_state.ruolo == "utente":
     # ---------- HOME ----------
     if scelta_pagina == "🏠 Home":
         st.markdown(f"### Benvenuto **{st.session_state.username}**!👋")
-        st.write("Questa è la panoramica generale delle tue attività.")
+        st.write("Questa è la panoramica generale delle tue attività. Usa il menu a sinistra per navigare tra le sezioni.")
 
         # KPI cards di esempio (totali generali)
         st.markdown("### 📈 Panoramica rapida")
@@ -1084,6 +1084,7 @@ if st.sidebar.button("🚪 Logout", key="logout_admin"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
