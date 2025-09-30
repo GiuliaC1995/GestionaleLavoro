@@ -255,72 +255,42 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # Sfondo colorato
+    # Sfondo colorato + box stile login
     st.markdown("""
         <style>
         .stApp {
             background-color: #00bcd4;
         }
-        /* Box login */
-        .login-box {
+        /* Box bianco che prende i primi 3 elementi (username, password, bottone) */
+        div[data-testid="stVerticalBlock"] > div:nth-child(-n+3) {
             background-color: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             width: 400px;
-            margin: 3rem auto;
-            text-align: center;
-        }
-        .login-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-        }
-        .login-title span {
-            margin-left: 8px;
+            margin: auto;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Logo + titolo sopra il box
-    st.markdown(
-        """
-        <div style="text-align:center; margin-bottom:1rem;">
-            <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif"
-                 alt="Logo DNA" style="width:100px; height:100px;"><br>
-            <h2 style="margin:0; color:white;">MedGenLab</h2>
-        </div>
-        """, unsafe_allow_html=True
-    )
 
-    # Box login
-    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    # Colonne per centrare
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        username = st.text_input("Nome utente", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
 
-    # Titolo con icona chiave
-    st.markdown(
-        "<div class='login-title'>🔑 <span>Login</span></div>",
-        unsafe_allow_html=True
-    )
+        if st.button("Accedi", key="login_btn"):
+            ruolo = login(username, password)
+            if ruolo:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.ruolo = ruolo
+                st.rerun()
+            else:
+                st.error("❌ Nome utente o password errati")
 
-    username = st.text_input("Nome utente", key="login_username")
-    password = st.text_input("Password", type="password", key="login_password")
-
-    if st.button("Accedi", key="login_btn"):
-        ruolo = login(username, password)
-        if ruolo:
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.ruolo = ruolo
-            st.rerun()
-        else:
-            st.error("❌ Nome utente o password errati")
-
-    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1157,6 +1127,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
