@@ -946,12 +946,15 @@ elif st.session_state.ruolo == "capo":
             df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
             if not df_ref.empty:
                 st.markdown("**Referti per tipologia**")
-                ref_counts = df_ref["Tipologia"].value_counts()
-                chart_admin_ref = alt.Chart(ref_counts.reset_index()).mark_bar().encode(
-                   x=alt.X("index:N", title="Tipologia"),
-                   y="Tipologia:Q",
-                   color=alt.value("#03a9f4")  # azzurro
+                ref_counts = df_ref["Tipologia"].value_counts().reset_index()
+                ref_counts.columns = ["Tipologia", "Conteggio"]
+
+                chart_admin_ref = alt.Chart(ref_counts).mark_bar().encode(
+                    x=alt.X("Tipologia:N", title="Tipologia"),
+                    y=alt.Y("Conteggio:Q", title="Numero"),
+                    color=alt.value("#03a9f4")  # azzurro
                 ).properties(width=600, height=400)
+
                 st.altair_chart(chart_admin_ref, use_container_width=True)
 
                 st.markdown("**Referti per malattia**")
@@ -1084,6 +1087,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
