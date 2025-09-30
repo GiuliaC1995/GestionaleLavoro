@@ -267,7 +267,8 @@ if not st.session_state.logged_in:
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             width: 400px;
-            margin: auto;
+            margin: 2rem auto; /* centra il box */
+            text-align: center;
         }
         .stButton>button {
             width: 100%;
@@ -284,7 +285,7 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # Titolo sopra
+    # Titolo/logo fuori dal box
     st.markdown(
         """
         <div style="text-align:center; margin-bottom:1rem;">
@@ -295,27 +296,26 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True
     )
 
-    # Box unico
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    # Box unico solo per il form
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
-        username = st.text_input("Nome utente", key="login_username")
-        password = st.text_input("Password", type="password", key="login_password")
+    username = st.text_input("Nome utente", key="login_username")
+    password = st.text_input("Password", type="password", key="login_password")
 
-        if st.button("Accedi", key="login_btn"):
-            ruolo = login(username, password)
-            if ruolo:
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.ruolo = ruolo
-                st.rerun()
-            else:
-                st.error("❌ Nome utente o password errati")
+    if st.button("Accedi", key="login_btn"):
+        ruolo = login(username, password)
+        if ruolo:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.ruolo = ruolo
+            st.rerun()
+        else:
+            st.error("❌ Nome utente o password errati")
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
+
 
 
 # =====================================
@@ -1153,6 +1153,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
