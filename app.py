@@ -255,7 +255,7 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # Sfondo colorato
+    # Sfondo colorato + box stile login
     st.markdown("""
         <style>
         .stApp {
@@ -272,7 +272,7 @@ if not st.session_state.logged_in:
         }
         .stTextInput>div>div>input {
             border-radius: 6px;
-            padding: 0.5rem;
+            padding: 0.6rem;
             border: 1px solid #ccc;
         }
         .stButton>button {
@@ -282,6 +282,7 @@ if not st.session_state.logged_in:
             background-color: #2196f3;
             color: white;
             font-size: 16px;
+            border: none;
         }
         .stButton>button:hover {
             background-color: #1976d2;
@@ -289,9 +290,12 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
+    # Centriamo e creiamo il box unico
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+
+        st.subheader("🔑 Login")  # titolo dentro al box
 
         with st.form("login_form"):
             username = st.text_input("Nome utente", key="login_username")
@@ -310,8 +314,6 @@ if not st.session_state.logged_in:
 
         st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-
-
 
 
 # =====================================
@@ -1102,6 +1104,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
