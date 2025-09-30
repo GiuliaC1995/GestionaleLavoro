@@ -261,7 +261,8 @@ if not st.session_state.logged_in:
         .stApp {
             background-color: #00bcd4;
         }
-        .login-box {
+        /* Box stile login applicato a un container Streamlit */
+        div[data-testid="stVerticalBlock"] > div:first-child {
             background-color: white;
             padding: 2.5rem;
             border-radius: 12px;
@@ -272,28 +273,23 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # Centriamo il box con colonne
+    # Colonne per centrare
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        with st.container():  # contenitore login
-            st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+        username = st.text_input("Nome utente", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
 
-            # Input dentro il box
-            username = st.text_input("Nome utente", key="login_username")
-            password = st.text_input("Password", type="password", key="login_password")
-
-            if st.button("Accedi", key="login_btn"):
-                ruolo = login(username, password)
-                if ruolo:
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.session_state.ruolo = ruolo
-                    st.rerun()
-                else:
-                    st.error("❌ Nome utente o password errati")
-
-            st.markdown("</div>", unsafe_allow_html=True)
+        if st.button("Accedi", key="login_btn"):
+            ruolo = login(username, password)
+            if ruolo:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.ruolo = ruolo
+                st.rerun()
+            else:
+                st.error("❌ Nome utente o password errati")
     st.stop()
+
 
 
 # =====================================
@@ -1084,6 +1080,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
