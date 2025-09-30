@@ -250,7 +250,7 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True
-))
+)
 
 
 if not st.session_state.logged_in:
@@ -1090,6 +1090,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
