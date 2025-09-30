@@ -255,9 +255,59 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    st.subheader("🔑 Login")
-    username = st.text_input("Nome utente")
-    password = st.text_input("Password", type="password")
+    # Sfondo colorato
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #00bcd4;
+        }
+        /* Box login */
+        .login-box {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            width: 400px;
+            margin: 3rem auto;
+            text-align: center;
+        }
+        .login-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+        .login-title span {
+            margin-left: 8px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Logo + titolo sopra il box
+    st.markdown(
+        """
+        <div style="text-align:center; margin-bottom:1rem;">
+            <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif"
+                 alt="Logo DNA" style="width:100px; height:100px;"><br>
+            <h2 style="margin:0; color:white;">MedGenLab</h2>
+        </div>
+        """, unsafe_allow_html=True
+    )
+
+    # Box login
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+
+    # Titolo con icona chiave
+    st.markdown(
+        "<div class='login-title'>🔑 <span>Login</span></div>",
+        unsafe_allow_html=True
+    )
+
+    username = st.text_input("Nome utente", key="login_username")
+    password = st.text_input("Password", type="password", key="login_password")
+
     if st.button("Accedi", key="login_btn"):
         ruolo = login(username, password)
         if ruolo:
@@ -267,6 +317,8 @@ if not st.session_state.logged_in:
             st.rerun()
         else:
             st.error("❌ Nome utente o password errati")
+
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 
@@ -1105,6 +1157,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
