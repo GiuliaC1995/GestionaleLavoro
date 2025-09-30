@@ -257,7 +257,7 @@ if not st.session_state.logged_in:
     st.markdown("""
         <style>
         .stApp {
-            background-color: #00bcd4;
+            background-color: #fdf6e3;
         }
         .stButton>button {
             width: 100%;
@@ -1137,6 +1137,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
