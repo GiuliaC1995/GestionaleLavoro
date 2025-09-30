@@ -410,6 +410,7 @@ if st.session_state.ruolo == "utente":
     
     # ---------- HOME ----------
     if scelta_pagina == "🏠 Home":
+        st.markdown(f"#### Benvenuto **{st.session_state.username}**!👋")
         st.write("Questa è la panoramica generale delle tue attività. Usa il menu a sinistra per navigare tra le sezioni.")
 
         # KPI cards di esempio (totali generali)
