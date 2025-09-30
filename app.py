@@ -255,19 +255,24 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # Sfondo colorato + stile box
+    # Sfondo + stile box
     st.markdown("""
         <style>
         .stApp {
             background-color: #00bcd4;
+        }
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
         }
         .login-box {
             background-color: white;
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            width: 400px;
-            margin: 2rem auto; /* centra il box */
+            width: 350px;
             text-align: center;
         }
         .stButton>button {
@@ -285,20 +290,16 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # Titolo/logo fuori dal box
-    st.markdown(
-        """
-        <div style="text-align:center; margin-bottom:1rem;">
+    # Wrapper HTML + logo + titolo
+    st.markdown("""
+        <div class="login-wrapper">
+          <div class="login-box">
             <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif"
-                 alt="Logo DNA" style="width:100px; height:100px;"><br>
-            <h2 style="margin:0; color:white;">MedGenLab</h2>
-        </div>
-        """, unsafe_allow_html=True
-    )
+                 alt="Logo DNA" style="width:80px; height:80px; margin-bottom:10px;">
+            <h2 style="margin:0; color:#333;">MedGenLab</h2>
+        """, unsafe_allow_html=True)
 
-    # Box unico solo per il form
-    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-
+    # Campi login (questi li mette streamlit dentro il div aperto sopra)
     username = st.text_input("Nome utente", key="login_username")
     password = st.text_input("Password", type="password", key="login_password")
 
@@ -312,7 +313,8 @@ if not st.session_state.logged_in:
         else:
             st.error("❌ Nome utente o password errati")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Chiudiamo il box
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.stop()
 
@@ -1153,6 +1155,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
