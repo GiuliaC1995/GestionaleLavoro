@@ -243,10 +243,10 @@ if "df_att" not in st.session_state:
 # Titolo con logo animato (sempre visibile, anche prima del login)
 st.markdown(
     """
-    <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+    <div style="display:flex; align-items:center; justify-content:center; margin-bottom:5px;">
         <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif" 
-             alt="Logo DNA" style="width:90px; height:90px; margin-right:20px;">
-        <h1 style="margin:0; font-size:42px;">MedGenLab</h1>
+             alt="Logo DNA" style="width:120px; height:120px; margin-right:0px;">
+        <h1 style="margin:0; font-size:35px;">MedGenLab</h1>
     </div>
     """,
     unsafe_allow_html=True
@@ -1090,6 +1090,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
