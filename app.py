@@ -372,30 +372,32 @@ if dark_mode:
             border: 1px solid #555555 !important;
         }
 
-        /* Dropdown options */
-        div[data-baseweb="select"] > div {
-            background-color: #1e1e1e !important;
-            color: #ffffff !important;
-        }
-
         /* Tabelle e dataframe */
         .stDataFrame, .stTable, .css-1k0ckh2 {
             background-color: #1e1e1e !important;
             color: #ffffff !important;
         }
 
-        /* Metriche personalizzate (KPI cards) */
+        /* 🎨 Fix per le KPI cards in dark mode */
         div[style*="background-color:#e8f5e9"],
         div[style*="background-color:#e3f2fd"],
         div[style*="background-color:#fff3e0"] {
             background-color: #2c2c2c !important;
             color: #ffffff !important;
         }
+
+        div[style*="background-color:#e8f5e9"] h2,
+        div[style*="background-color:#e3f2fd"] h2,
+        div[style*="background-color:#fff3e0"] h2,
+        div[style*="background-color:#e8f5e9"] h3,
+        div[style*="background-color:#e3f2fd"] h3,
+        div[style*="background-color:#fff3e0"] h3 {
+            color: #ffffff !important;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
-
             
 # =====================================
 # Navigazione per ruolo
@@ -1138,6 +1140,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
