@@ -255,7 +255,6 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # CSS sfondo e stile box
     st.markdown("""
         <style>
         .stApp {
@@ -285,7 +284,7 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # uso un "form" che si comporta come un contenitore unico
+    # Centriamo il form
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         with st.form("login_form"):
@@ -309,7 +308,9 @@ if not st.session_state.logged_in:
                     st.error("❌ Nome utente o password errati")
 
             st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
+
 
 
 # =====================================
@@ -1145,6 +1146,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
