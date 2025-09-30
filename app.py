@@ -261,34 +261,56 @@ if not st.session_state.logged_in:
         .stApp {
             background-color: #00bcd4;
         }
-        /* Box stile login applicato a un container Streamlit */
-        div[data-testid="stVerticalBlock"] > div:first-child {
+        .login-box {
             background-color: white;
-            padding: 2.5rem;
+            padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            width: 400px;
+            width: 380px;
             margin: auto;
+            text-align: center;
+        }
+        .stTextInput>div>div>input {
+            border-radius: 6px;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+        }
+        .stButton>button {
+            width: 100%;
+            border-radius: 6px;
+            padding: 0.6rem;
+            background-color: #2196f3;
+            color: white;
+            font-size: 16px;
+        }
+        .stButton>button:hover {
+            background-color: #1976d2;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Colonne per centrare
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        username = st.text_input("Nome utente", key="login_username")
-        password = st.text_input("Password", type="password", key="login_password")
+        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
-        if st.button("Accedi", key="login_btn"):
-            ruolo = login(username, password)
-            if ruolo:
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.ruolo = ruolo
-                st.rerun()
-            else:
-                st.error("❌ Nome utente o password errati")
+        with st.form("login_form"):
+            username = st.text_input("Nome utente", key="login_username")
+            password = st.text_input("Password", type="password", key="login_password")
+            login_btn = st.form_submit_button("Accedi")
+
+            if login_btn:
+                ruolo = login(username, password)
+                if ruolo:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.ruolo = ruolo
+                    st.rerun()
+                else:
+                    st.error("❌ Nome utente o password errati")
+
+        st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+
 
 
 
@@ -1080,6 +1102,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
