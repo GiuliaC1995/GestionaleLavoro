@@ -415,10 +415,11 @@ if st.session_state.ruolo == "utente":
     if scelta_pagina == "🏠 Home":
     # Icona DNA che ruota
         st.markdown(
-            f"""
-            <div style="display:flex; align-items:center; gap:15px;">
-                <h2 style="margin:0;">Benvenuto <b>{st.session_state.username}</b>! 👋</h2>
-                <img src="DNA loop animation.gif" alt="DNA" style="width:60px; height:60px;">
+            """
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <h1 style="margin:0; font-size:40px;">MedGenLab</h1>
+                <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/DNA loop animation.gif"
+                     alt="Logo DNA" style="width:80px; height:80px;">
             </div>
             """,
             unsafe_allow_html=True
@@ -1087,6 +1088,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
