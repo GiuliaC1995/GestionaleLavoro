@@ -242,10 +242,6 @@ if "df_att" not in st.session_state:
 # UI - Titolo e Login
 # =====================================
 # Titolo con logo animato (sempre visibile, anche prima del login)
-# =====================================
-# UI - Titolo e Login
-# =====================================
-# Titolo con logo animato (sempre visibile, anche prima del login)
 st.markdown(
     """
     <div style="display:flex; align-items:center; justify-content:center; margin-bottom:5px;">
@@ -257,55 +253,20 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
 if not st.session_state.logged_in:
-    # Sfondo colorato e stile box login
-    st.markdown("""
-        <style>
-        .stApp {
-            background-color: #00bcd4;
-        }
-        .login-box {
-            background-color: white;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            width: 400px;
-            margin: auto;
-        }
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            border: none;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    # Colonne per centrare
-    col1, col2, col3 = st.columns([2,2,2])
-    with col2:
-        # 🔽 Apertura box
-        st.markdown('<div class="login-box">', unsafe_allow_html=True)
-
-        # Tutto dentro al box
-        username = st.text_input("Nome utente", key="login_username")
-        password = st.text_input("Password", type="password", key="login_password")
-
-        if st.button("Accedi", key="login_btn"):
-            ruolo = login(username, password)
-            if ruolo:
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.ruolo = ruolo
-                st.rerun()
-            else:
-                st.error("❌ Nome utente o password errati")
-
-        # 🔽 Chiusura box
-        st.markdown('</div>', unsafe_allow_html=True)
-
+    st.subheader("🔑 Login")
+    username = st.text_input("Nome utente")
+    password = st.text_input("Password", type="password")
+    if st.button("Accedi", key="login_btn"):
+        ruolo = login(username, password)
+        if ruolo:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.ruolo = ruolo
+            st.rerun()
+        else:
+            st.error("❌ Nome utente o password errati")
     st.stop()
 
 
@@ -1097,10 +1058,5 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
-
-
-
-
-
 
 
