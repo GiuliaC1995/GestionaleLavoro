@@ -416,22 +416,9 @@ if st.session_state.ruolo == "utente":
     # Icona DNA che ruota
         st.markdown(
             f"""
-            <style>
-            @keyframes rotate {{
-                from {{transform: rotate(0deg);}}
-                to {{transform: rotate(360deg);}}
-            }}
-            .dna-icon {{
-                display: block;
-                margin: 20px auto;
-                width: 80px;
-                height: 80px;
-                animation: rotate 10s linear infinite;
-            }}
-            </style>
-            <div style="text-align:center;">
-                <img src="https://img.icons8.com/ios-filled/100/dna-helix.png" class="dna-icon">
-                <h2>Benvenuto <b>{st.session_state.username}</b>! 👋</h2>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <h2 style="margin:0;">Benvenuto <b>{st.session_state.username}</b>! 👋</h2>
+                <img src="dna.gif" alt="DNA" style="width:60px; height:60px;">
             </div>
             """,
             unsafe_allow_html=True
@@ -1100,6 +1087,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
