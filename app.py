@@ -262,12 +262,10 @@ if not st.session_state.logged_in:
             width: 380px;
             text-align: center;
         }
-        .stTextInput>div>div>input {
-            border-radius: 6px;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
+        .login-box .stTextInput>div>div>input {
+            width: 100% !important;
         }
-        .stButton>button {
+        .login-box .stButton>button {
             width: 100%;
             border-radius: 6px;
             padding: 0.6rem;
@@ -276,7 +274,7 @@ if not st.session_state.logged_in:
             font-size: 16px;
             border: none;
         }
-        .stButton>button:hover {
+        .login-box .stButton>button:hover {
             background-color: #1976d2;
         }
         </style>
@@ -296,8 +294,8 @@ if not st.session_state.logged_in:
 
     # Box login
     st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-    username = st.text_input("Nome utente")
-    password = st.text_input("Password", type="password")
+    username = st.text_input("Nome utente", key="login_username")
+    password = st.text_input("Password", type="password", key="login_password")
     if st.button("Accedi", key="login_btn"):
         ruolo = login(username, password)
         if ruolo:
@@ -309,6 +307,7 @@ if not st.session_state.logged_in:
             st.error("❌ Nome utente o password errati")
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+
 
 
 # =====================================
@@ -1099,5 +1098,6 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
