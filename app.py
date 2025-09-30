@@ -970,13 +970,20 @@ elif st.session_state.ruolo == "capo":
             df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
             if not df_acc.empty:
                 st.markdown("**Campioni per malattia**")
-                camp_mal = df_acc["TipoMalattia"].value_counts()
-                chart_admin_camp = alt.Chart(camp_mal.reset_index()).mark_bar().encode(
-                    x=alt.X("index:N", title="Malattia"),
-                    y="TipoMalattia:Q",
-                    color=alt.value("#00bcd4")  # verde acqua
-                ).properties(width=600, height=400)
-                st.altair_chart(chart_admin_camp, use_container_width=True)
+                camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"].copy()
+                if not camp_user.empty:
+                    camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
+                    camp_user_counts.columns = ["Malattia", "Conteggio"]
+
+                    chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
+                        x=alt.X("Malattia:N", title="Malattia"),
+                        y=alt.Y("Conteggio:Q", title="Numero"),
+                        color=alt.value("#3f51b5")  # indaco
+                    ).properties(width=600, height=400)
+
+                    st.altair_chart(chart_admin_camp_user, use_container_width=True)
+                else:
+                    st.info("Nessun campione registrato per questo utente.")
 
     # ---------- MONITORAGGIO PER UTENTE ----------
     elif scelta_pagina_capo == "👩‍🔬 Monitoraggio per Utente":
@@ -1025,15 +1032,21 @@ elif st.session_state.ruolo == "capo":
                     st.info("Nessun referto registrato per questo utente.")
 
                 st.markdown("**Campioni per malattia**")
-                camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"]
+                camp_user = df_user[df_user["MacroAttivita"] == "ACCETTAZIONE"].copy()
                 if not camp_user.empty:
                     camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
+                    camp_user_counts.columns = ["Malattia", "Conteggio"]
+
                     chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
-                        x=alt.X("index:N", title="Malattia"),
-                        y="TipoMalattia:Q",
+                        x=alt.X("Malattia:N", title="Malattia"),
+                        y=alt.Y("Conteggio:Q", title="Numero"),
                         color=alt.value("#3f51b5")  # indaco
                     ).properties(width=600, height=400)
+
                     st.altair_chart(chart_admin_camp_user, use_container_width=True)
+                else:
+                    st.info("Nessun campione registrato per questo utente.")
+
 
     # ---------- MONITORAGGIO PER ATTIVITÀ/MALATTIA ----------
     elif scelta_pagina_capo == "🧬 Monitoraggio per Attività/Malattia":
@@ -1092,6 +1105,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
