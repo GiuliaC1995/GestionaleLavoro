@@ -695,118 +695,118 @@ if st.session_state.ruolo == "utente":
                 )
 
     # ---------- GRAFICI ----------
-elif scelta_pagina == "📊 Riepilogo e Grafici":
-    st.subheader("📊 Riepilogo attività personali")
+    elif scelta_pagina == "📊 Riepilogo e Grafici":
+        st.subheader("📊 Riepilogo attività personali")
 
-    df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
+        df_mio = st.session_state.df_att[st.session_state.df_att["NomeUtente"] == st.session_state.username]
 
-    if df_mio.empty:
-        st.info("Nessuna attività registrata.")
-    else:
-        if not pd.api.types.is_datetime64_any_dtype(df_mio["Data"]):
-            df_mio["Data"] = pd.to_datetime(df_mio["Data"], errors="coerce")
-
-        data_min = df_mio["Data"].dropna().min().date() if df_mio["Data"].notna().any() else datetime.today().date()
-        data_max = df_mio["Data"].dropna().max().date() if df_mio["Data"].notna().any() else datetime.today().date()
-
-        start_date = st.date_input("Data inizio", data_min)
-        end_date = st.date_input("Data fine", data_max)
-
-        df_periodo = df_mio[
-            df_mio["Data"].notna()
-            & (df_mio["Data"].dt.date >= start_date)
-            & (df_mio["Data"].dt.date <= end_date)
-        ]
-
-        # KPI
-        tot_ore = df_periodo["Ore"].fillna(0).sum()
-        tot_minuti = df_periodo["Minuti"].fillna(0).sum()
-        tot_ore_equivalenti = tot_ore + (tot_minuti / 60)
-        tot_campioni = df_periodo["NumCampioni"].fillna(0).sum()
-        tot_referti = df_periodo["NumReferti"].fillna(0).sum()
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(f"""
-            <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
-            <h3>⏱️ Ore Totali</h3>
-            <h2>{tot_ore_equivalenti:.1f}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-        with col2:
-            st.markdown(f"""
-            <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
-            <h3>🧪 Campioni</h3>
-            <h2>{int(tot_campioni)}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-        with col3:
-            st.markdown(f"""
-            <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
-            <h3>📄 Referti</h3>
-            <h2>{int(tot_referti)}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # Grafico ore totali per MacroAttività
-        st.markdown("**Ore totali per MacroAttività**")
-        ore_macro = df_periodo.groupby("MacroAttivita")["Ore"].sum().reset_index()
-        if not ore_macro.empty:
-            chart = alt.Chart(ore_macro).mark_bar().encode(
-                x=alt.X("MacroAttivita:N", sort='-y'),
-                y="Ore:Q",
-                color=alt.value("#4caf50")
-            ).properties(width=600, height=400)
-            st.altair_chart(chart, use_container_width=True)
+        if df_mio.empty:
+            st.info("Nessuna attività registrata.")
         else:
-            st.info("Nessuna ora registrata nel periodo selezionato.")
+            if not pd.api.types.is_datetime64_any_dtype(df_mio["Data"]):
+                df_mio["Data"] = pd.to_datetime(df_mio["Data"], errors="coerce")
 
-        # Grafico referti per tipologia
-        df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
-        if not df_ref.empty:
-            st.markdown("**Referti per tipologia**")
-            referti_counts = (
-                df_ref.groupby("Tipologia")
-                .size()
-                .reset_index(name="Conteggio")
-            )
-            chart_ref = alt.Chart(referti_counts).mark_bar().encode(
-                x=alt.X("Tipologia:N", title="Tipologia"),
-                y=alt.Y("Conteggio:Q", title="Numero"),
-                color=alt.value("#ff9800")
-            ).properties(width=600, height=400)
-            st.altair_chart(chart_ref, use_container_width=True)
-        else:
-            st.info("Nessun referto registrato nel periodo selezionato.")
+            data_min = df_mio["Data"].dropna().min().date() if df_mio["Data"].notna().any() else datetime.today().date()
+            data_max = df_mio["Data"].dropna().max().date() if df_mio["Data"].notna().any() else datetime.today().date()
 
-        # Grafico accettazione campioni interni vs esterni
-        df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
-        if not df_acc.empty:
-            st.markdown("**Accettazione: campioni interni vs esterni**")
-            df_acc["NumCampioni"] = pd.to_numeric(df_acc["NumCampioni"], errors="coerce").fillna(0)
-            att_lower = df_acc["Attivita"].str.lower().fillna("")
-            df_acc["TipoAcc"] = att_lower.apply(
-                lambda s: "Interni" if "intern" in s else ("Esterni" if "estern" in s else "Altro")
-            )
-            serie_accettazione = (
-                df_acc.groupby("TipoAcc")["NumCampioni"]
-                .sum()
-                .reindex(["Interni", "Esterni", "Altro"])
-                .fillna(0)
-                .reset_index()
-            )
-            if serie_accettazione["NumCampioni"].sum() > 0:
-                chart_acc = alt.Chart(serie_accettazione).mark_bar().encode(
-                   x=alt.X("TipoAcc:N", title="Tipo di accettazione"),
-                   y="NumCampioni:Q",
-                   color=alt.value("#9c27b0")
+            start_date = st.date_input("Data inizio", data_min)
+            end_date = st.date_input("Data fine", data_max)
+
+            df_periodo = df_mio[
+                df_mio["Data"].notna()
+                & (df_mio["Data"].dt.date >= start_date)
+                & (df_mio["Data"].dt.date <= end_date)
+            ]
+
+            # KPI
+            tot_ore = df_periodo["Ore"].fillna(0).sum()
+            tot_minuti = df_periodo["Minuti"].fillna(0).sum()
+            tot_ore_equivalenti = tot_ore + (tot_minuti / 60)
+            tot_campioni = df_periodo["NumCampioni"].fillna(0).sum()
+            tot_referti = df_periodo["NumReferti"].fillna(0).sum()
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
+                <h3>⏱️ Ore Totali</h3>
+                <h2>{tot_ore_equivalenti:.1f}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                <div style="background-color:#e3f2fd;padding:15px;border-radius:10px;text-align:center">
+                <h3>🧪 Campioni</h3>
+                <h2>{int(tot_campioni)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                <div style="background-color:#fff3e0;padding:15px;border-radius:10px;text-align:center">
+                <h3>📄 Referti</h3>
+                <h2>{int(tot_referti)}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Grafico ore totali per MacroAttività
+            st.markdown("**Ore totali per MacroAttività**")
+            ore_macro = df_periodo.groupby("MacroAttivita")["Ore"].sum().reset_index()
+            if not ore_macro.empty:
+                chart = alt.Chart(ore_macro).mark_bar().encode(
+                    x=alt.X("MacroAttivita:N", sort='-y'),
+                    y="Ore:Q",
+                    color=alt.value("#4caf50")
                 ).properties(width=600, height=400)
-                st.altair_chart(chart_acc, use_container_width=True)
+                st.altair_chart(chart, use_container_width=True)
             else:
-                st.info("Nessun campione registrato nel periodo selezionato.")
-        else:
-            st.info("Nessuna attività di accettazione nel periodo selezionato.")
+                st.info("Nessuna ora registrata nel periodo selezionato.")
 
+            # Grafico referti per tipologia
+            df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
+            if not df_ref.empty:
+                st.markdown("**Referti per tipologia**")
+                referti_counts = (
+                    df_ref.groupby("Tipologia")
+                    .size()
+                    .reset_index(name="Conteggio")
+                )
+                chart_ref = alt.Chart(referti_counts).mark_bar().encode(
+                    x=alt.X("Tipologia:N", title="Tipologia"),
+                    y=alt.Y("Conteggio:Q", title="Numero"),
+                    color=alt.value("#ff9800")
+                ).properties(width=600, height=400)
+                st.altair_chart(chart_ref, use_container_width=True)
+            else:
+                st.info("Nessun referto registrato nel periodo selezionato.")
+
+            # Grafico accettazione campioni interni vs esterni
+            df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
+            if not df_acc.empty:
+                st.markdown("**Accettazione: campioni interni vs esterni**")
+                df_acc["NumCampioni"] = pd.to_numeric(df_acc["NumCampioni"], errors="coerce").fillna(0)
+                att_lower = df_acc["Attivita"].str.lower().fillna("")
+                df_acc["TipoAcc"] = att_lower.apply(
+                    lambda s: "Interni" if "intern" in s else ("Esterni" if "estern" in s else "Altro")
+                )
+                serie_accettazione = (
+                    df_acc.groupby("TipoAcc")["NumCampioni"]
+                    .sum()
+                    .reindex(["Interni", "Esterni", "Altro"])
+                    .fillna(0)
+                    .reset_index()
+                )
+                if serie_accettazione["NumCampioni"].sum() > 0:
+                    chart_acc = alt.Chart(serie_accettazione).mark_bar().encode(
+                       x=alt.X("TipoAcc:N", title="Tipo di accettazione"),
+                       y="NumCampioni:Q",
+                       color=alt.value("#9c27b0")
+                    ).properties(width=600, height=400)
+                    st.altair_chart(chart_acc, use_container_width=True)
+                else:
+                    st.info("Nessun campione registrato nel periodo selezionato.")
+            else:
+                st.info("Nessuna attività di accettazione nel periodo selezionato.")
+    
                 
     # ---------- PROFILO ----------
     elif scelta_pagina == "⚙️ Profilo":
@@ -1084,6 +1084,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
