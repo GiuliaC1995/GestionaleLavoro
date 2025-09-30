@@ -266,7 +266,7 @@ if not st.session_state.logged_in:
             background-color: white;
             padding: 2.5rem;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
             width: 400px;
             margin: auto;
         }
@@ -1078,6 +1078,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
