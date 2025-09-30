@@ -490,7 +490,7 @@ if st.session_state.ruolo == "utente":
         if macro_tmp == "ACCETTAZIONE":
             with st.expander("Dettagli campioni"):
                 num_campioni = st.number_input("Numero di campioni", min_value=0, step=1, key="num_campioni")
-                tipo_malattia = st.selectbox("Tipo di malattia", ["-- Seleziona --", "Parkinson", "Alzheimer", "Altro"], key="tipo_malattia")
+                tipo_malattia = st.selectbox("Tipo di malattia", ["-- Seleziona --", "FSHD", "Genetica oculare", "Neuropsichiatria"], key="tipo_malattia")
                 if tipo_malattia == "-- Seleziona --":
                     tipo_malattia = None
         elif macro_tmp == "REFERTAZIONE":
@@ -1088,6 +1088,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
