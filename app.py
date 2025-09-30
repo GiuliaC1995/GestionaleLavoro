@@ -240,23 +240,23 @@ if "df_att" not in st.session_state:
 # =====================================
 # UI - Titolo e Login
 # =====================================
-# Titolo con logo (sempre visibile, anche prima del login)
+# Titolo con logo animato (sempre visibile, anche prima del login)
 st.markdown(
     """
-    <div style="display:flex; align-items:center;">
-        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/icons8-biotecnologia-100.png" 
-             alt="Logo" style="width:80px; margin-right:15px;">
-        <h1 style="margin:1;">MedGenLab</h1>
+    <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/DNA%20loop%20animation.gif"
+             alt="Logo DNA" style="width:90px; height:90px; margin-right:20px;">
+        <h1 style="margin:0; font-size:46px; color:#2c3e50;">MedGenLab</h1>
     </div>
     """,
     unsafe_allow_html=True
 )
 
 if not st.session_state.logged_in:
-    st.subheader("Login")
+    st.subheader("🔑 Login")
     username = st.text_input("Nome utente")
     password = st.text_input("Password", type="password")
-    if st.button("Accedi"):
+    if st.button("Accedi", key="login_btn"):
         ruolo = login(username, password)
         if ruolo:
             st.session_state.logged_in = True
@@ -264,8 +264,9 @@ if not st.session_state.logged_in:
             st.session_state.ruolo = ruolo
             st.rerun()
         else:
-            st.error("Nome utente o password errati")
+            st.error("❌ Nome utente o password errati")
     st.stop()
+
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1088,6 +1089,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
