@@ -295,8 +295,6 @@ if not st.session_state.logged_in:
     with col2:
         st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
-        st.subheader("🔑 Login")  # titolo dentro al box
-
         with st.form("login_form"):
             username = st.text_input("Nome utente", key="login_username")
             password = st.text_input("Password", type="password", key="login_password")
@@ -1104,77 +1102,5 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
