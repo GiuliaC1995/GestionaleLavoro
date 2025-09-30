@@ -296,7 +296,6 @@ if not st.session_state.logged_in:
     st.stop()
 
 
-
 # =====================================
 # Sidebar: info utente e azioni
 # =====================================
@@ -1085,6 +1084,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
