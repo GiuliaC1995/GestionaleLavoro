@@ -271,13 +271,7 @@ if not st.session_state.logged_in:
         .stButton>button:hover {
             background-color: #45a049;
         }
-        .login-box {
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: white; /* sfondo bianco */
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-        }
+        
         </style>
     """, unsafe_allow_html=True)
 
@@ -1143,6 +1137,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
