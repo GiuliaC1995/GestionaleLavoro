@@ -255,6 +255,7 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
+    # CSS sfondo e stile box
     st.markdown("""
         <style>
         .stApp {
@@ -265,7 +266,7 @@ if not st.session_state.logged_in:
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            width: 400px;
+            width: 380px;
             margin: auto;
             text-align: center;
         }
@@ -284,19 +285,20 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # wrapper per centrare
+    # uso un "form" che si comporta come un contenitore unico
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        with st.container():
+        with st.form("login_form"):
             st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
             st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=80)
             st.markdown("<h2 style='margin:0; color:#333;'>MedGenLab</h2>", unsafe_allow_html=True)
 
-            username = st.text_input("Nome utente", key="login_username")
-            password = st.text_input("Password", type="password", key="login_password")
+            username = st.text_input("Nome utente")
+            password = st.text_input("Password", type="password")
+            login_btn = st.form_submit_button("Accedi")
 
-            if st.button("Accedi", key="login_btn"):
+            if login_btn:
                 ruolo = login(username, password)
                 if ruolo:
                     st.session_state.logged_in = True
@@ -307,8 +309,8 @@ if not st.session_state.logged_in:
                     st.error("❌ Nome utente o password errati")
 
             st.markdown("</div>", unsafe_allow_html=True)
-
     st.stop()
+
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1143,6 +1145,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
