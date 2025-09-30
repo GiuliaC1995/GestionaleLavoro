@@ -255,20 +255,40 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    st.subheader("🔑 Login")
-    username = st.text_input("Nome utente")
-    password = st.text_input("Password", type="password")
-    if st.button("Accedi", key="login_btn"):
-        ruolo = login(username, password)
-        if ruolo:
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.ruolo = ruolo
-            st.rerun()
-        else:
-            st.error("❌ Nome utente o password errati")
-    st.stop()
+    # Sfondo colorato
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #00bcd4;
+        }
+        /* Box stile login applicato a un container Streamlit */
+        div[data-testid="stVerticalBlock"] > div:first-child {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            width: 400px;
+            margin: auto;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
+    # Colonne per centrare
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        username = st.text_input("Nome utente", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
+
+        if st.button("Accedi", key="login_btn"):
+            ruolo = login(username, password)
+            if ruolo:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.ruolo = ruolo
+                st.rerun()
+            else:
+                st.error("❌ Nome utente o password errati")
+    st.stop()
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1058,5 +1078,6 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
