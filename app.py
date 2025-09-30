@@ -245,7 +245,7 @@ st.markdown(
     """
     <div style="display:flex; align-items:flex-start; justify-content:center; margin-bottom:10px;">
         <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif" 
-             alt="Logo" style="width:110px; height:110px; margin-right:15px;">
+             alt="Logo" style="width:110px; height:110px; margin-right:5px;">
         <h1 style="margin:0; font-size:38px;">MedGenLab</h1>
     </div>
     """,
@@ -1090,6 +1090,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
