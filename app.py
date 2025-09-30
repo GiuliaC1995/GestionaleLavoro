@@ -242,6 +242,10 @@ if "df_att" not in st.session_state:
 # UI - Titolo e Login
 # =====================================
 # Titolo con logo animato (sempre visibile, anche prima del login)
+# =====================================
+# UI - Titolo e Login
+# =====================================
+# Titolo con logo animato (sempre visibile, anche prima del login)
 st.markdown(
     """
     <div style="display:flex; align-items:center; justify-content:center; margin-bottom:5px;">
@@ -252,7 +256,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 
 if not st.session_state.logged_in:
     # Sfondo colorato e stile box login
@@ -283,8 +286,10 @@ if not st.session_state.logged_in:
     # Colonne per centrare
     col1, col2, col3 = st.columns([2,2,2])
     with col2:
+        # 🔽 Apertura box
         st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
+        # Tutto dentro al box
         username = st.text_input("Nome utente", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
 
@@ -298,9 +303,11 @@ if not st.session_state.logged_in:
             else:
                 st.error("❌ Nome utente o password errati")
 
+        # 🔽 Chiusura box
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.stop()
+
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1090,6 +1097,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
