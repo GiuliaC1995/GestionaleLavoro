@@ -169,11 +169,12 @@ macro_tipologia_attivita = {
         "Manutenzione strumenti": [
             "Pulizia ABI e/o cambio capillari",
             "Pulizia NextSeq",
-            "Pulizia MiSeq"
+            "Pulizia MiSeq",
+            "Backup Dati"
         ]
     },
     "INFORMATICA": {
-        "Backup Dati": ["Scarico Dati"],
+        "Backup Dati NGS": ["Scarico Dati NGS"],
         "Programmazione": ["Programmazione"],
         "Interpretazione dati grezzi": [
             "Analisi dati NGS",
@@ -1097,6 +1098,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
