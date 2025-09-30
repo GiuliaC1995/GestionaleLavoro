@@ -490,13 +490,13 @@ if st.session_state.ruolo == "utente":
         if macro_tmp == "ACCETTAZIONE":
             with st.expander("Dettagli campioni"):
                 num_campioni = st.number_input("Numero di campioni", min_value=0, step=1, key="num_campioni")
-                tipo_malattia = st.selectbox("Tipo di malattia", ["-- Seleziona --", "FSHD", "Genetica oculare", "Neuropsichiatria","Covid","Altro"], key="tipo_malattia")
+                tipo_malattia = st.selectbox("Tipo di malattia", ["-- Seleziona --", "FSHD", "Genetica oculare", "Autismo","Covid","HBOC", "Rene Policistico", "Altro"], key="tipo_malattia")
                 if tipo_malattia == "-- Seleziona --":
                     tipo_malattia = None
         elif macro_tmp == "REFERTAZIONE":
             with st.expander("Dettagli referti"):
                 num_referti = st.number_input("Numero di referti", min_value=0, step=1, key="num_referti")
-                tipo_malattia_ref = st.selectbox("Tipo di malattia", ["-- Seleziona --", "FSHD", "Genetica oculare", "Neuropsichiatria","Covid","Altro"], key="tipo_malattia_ref")
+                tipo_malattia_ref = st.selectbox("Tipo di malattia", ["-- Seleziona --", "FSHD", "Genetica oculare", "Autismo","Covid","HBOC", "Rene Policistico", "Altro"], key="tipo_malattia_ref")
                 if tipo_malattia_ref == "-- Seleziona --":
                     tipo_malattia_ref = None
 
@@ -568,7 +568,7 @@ if st.session_state.ruolo == "utente":
 
             # --- Campi extra per ACCETTAZIONE / REFERTAZIONE ---
             num_campioni_mod, tipo_malattia_mod, num_referti_mod, tipo_malattia_ref_mod = None, None, None, None
-            mal_opts = ["-- Seleziona --", "FSHD", "Genetica oculare", "Neuropsichiatria","Covid","Altro"]
+            mal_opts = ["-- Seleziona --", "FSHD", "Genetica oculare", "Autismo","Covid","HBOC", "Rene Policistico", "Altro"]
 
             if macro_mod == "ACCETTAZIONE":
                 with st.expander("Dettagli campioni"):
@@ -1088,6 +1088,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
