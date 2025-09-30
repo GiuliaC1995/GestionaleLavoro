@@ -833,17 +833,6 @@ if st.session_state.ruolo == "utente":
                     st.success("✅ Password cambiata e salvata su Google Sheets!")
                 except Exception as e:
                     st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
-if st.sidebar.button("🔄 Sincronizza adesso", key="sync_user"):
-    sync_now()
-if st.sidebar.button("🚪 Logout", key="logout_user"):
-    try:
-        sync_now()
-    except:
-        pass
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.session_state.ruolo = ""
-    st.rerun()
 
 # =====================================
 # Area CAPO (Admin)
@@ -1072,10 +1061,15 @@ elif st.session_state.ruolo == "capo":
                 ).properties(width=600, height=400)
                 st.altair_chart(chart_camp_utenti, use_container_width=True)
 
+# =====================================
+# Azioni comuni (utente e capo)
+# =====================================
+st.sidebar.markdown("---")
 
-if st.sidebar.button("🔄 Sincronizza adesso", key="sync_admin"):
+if st.sidebar.button("🔄 Sincronizza adesso", key="sync_common"):
     sync_now()
-if st.sidebar.button("🚪 Logout", key="logout_admin"):
+
+if st.sidebar.button("🚪 Logout", key="logout_common"):
     try:
         sync_now()
     except:
@@ -1084,6 +1078,7 @@ if st.sidebar.button("🚪 Logout", key="logout_admin"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
