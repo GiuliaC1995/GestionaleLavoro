@@ -255,14 +255,13 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # Sfondo colorato
+    # Sfondo colorato e stile box login
     st.markdown("""
         <style>
         .stApp {
             background-color: #00bcd4;
         }
-        /* Box stile login applicato a un container Streamlit */
-        div[data-testid="stVerticalBlock"] > div:first-child {
+        .login-box {
             background-color: white;
             padding: 2.5rem;
             border-radius: 12px;
@@ -270,12 +269,22 @@ if not st.session_state.logged_in:
             width: 400px;
             margin: auto;
         }
+        .stButton>button {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border: none;
+        }
         </style>
     """, unsafe_allow_html=True)
 
     # Colonne per centrare
     col1, col2, col3 = st.columns([2,2,2])
     with col2:
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+
         username = st.text_input("Nome utente", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
 
@@ -288,6 +297,9 @@ if not st.session_state.logged_in:
                 st.rerun()
             else:
                 st.error("❌ Nome utente o password errati")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
     st.stop()
 
 # =====================================
@@ -1078,6 +1090,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
