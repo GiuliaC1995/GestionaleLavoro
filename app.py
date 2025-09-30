@@ -274,7 +274,7 @@ if not st.session_state.logged_in:
     """, unsafe_allow_html=True)
 
     # Colonne per centrare
-    col1, col2, col3 = st.columns([1,2,1])
+    col1, col2, col3 = st.columns([2,2,2])
     with col2:
         username = st.text_input("Nome utente", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
@@ -1078,6 +1078,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
