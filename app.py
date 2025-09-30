@@ -280,7 +280,7 @@ if not st.session_state.logged_in:
         </style>
     """, unsafe_allow_html=True)
 
-    # Logo + titolo
+    # 🔹 Logo + titolo sopra
     st.markdown(
         """
         <div class="login-container">
@@ -292,21 +292,26 @@ if not st.session_state.logged_in:
         unsafe_allow_html=True
     )
 
-    # Box login
-    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-    username = st.text_input("Nome utente", key="login_username")
-    password = st.text_input("Password", type="password", key="login_password")
-    if st.button("Accedi", key="login_btn"):
-        ruolo = login(username, password)
-        if ruolo:
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.ruolo = ruolo
-            st.rerun()
-        else:
-            st.error("❌ Nome utente o password errati")
-    st.markdown("</div>", unsafe_allow_html=True)
+    # 🔹 Box di login vero
+    with st.container():
+        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+
+        username = st.text_input("Nome utente", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
+        if st.button("Accedi", key="login_btn"):
+            ruolo = login(username, password)
+            if ruolo:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.ruolo = ruolo
+                st.rerun()
+            else:
+                st.error("❌ Nome utente o password errati")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
+
 
 
 
@@ -1098,6 +1103,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
