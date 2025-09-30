@@ -762,22 +762,28 @@ if st.session_state.ruolo == "utente":
                 st.info("Nessuna ora registrata nel periodo selezionato.")
 
             # Grafico referti per tipologia
+            # Suddivisione referti per tipo
             df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
             if not df_ref.empty:
                 st.markdown("**Referti per tipologia**")
-                referti_counts = (
-                    df_ref.groupby("Tipologia")
-                    .size()
-                    .reset_index(name="Conteggio")
-                )
-                chart_ref = alt.Chart(referti_counts).mark_bar().encode(
-                    x=alt.X("Tipologia:N", title="Tipologia"),
-                    y=alt.Y("Conteggio:Q", title="Numero"),
-                    color=alt.value("#ff9800")
-                ).properties(width=600, height=400)
-                st.altair_chart(chart_ref, use_container_width=True)
-            else:
-                st.info("Nessun referto registrato nel periodo selezionato.")
+    
+                # 🔍 DEBUG: controlla che ci siano dati
+                st.write("Dati referti trovati:", df_ref[["MacroAttivita","Tipologia"]].head(10))
+
+                if "Tipologia" in df_ref.columns and df_ref["Tipologia"].notna().any():
+                    ref_counts = df_ref["Tipologia"].value_counts().reset_index()
+                    ref_counts.columns = ["Tipologia", "Conteggio"]
+
+                    chart_admin_ref = alt.Chart(ref_counts).mark_bar().encode(
+                        x=alt.X("Tipologia:N", title="Tipologia"),
+                        y=alt.Y("Conteggio:Q", title="Numero"),
+                        color=alt.value("#03a9f4")  # azzurro
+                    ).properties(width=600, height=400)
+
+                    st.altair_chart(chart_admin_ref, use_container_width=True)
+                else:
+                    st.info("⚠️ Nessuna tipologia disponibile nei referti.")
+
 
             # Grafico accettazione campioni interni vs esterni
             df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
@@ -1087,6 +1093,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
