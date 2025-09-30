@@ -275,25 +275,25 @@ if not st.session_state.logged_in:
     # Centriamo il box con colonne
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+        with st.container():  # contenitore login
+            st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
-        # SOLO input e bottone, senza logo/titolo
-        username = st.text_input("Nome utente", key="login_username")
-        password = st.text_input("Password", type="password", key="login_password")
+            # Input dentro il box
+            username = st.text_input("Nome utente", key="login_username")
+            password = st.text_input("Password", type="password", key="login_password")
 
-        if st.button("Accedi", key="login_btn"):
-            ruolo = login(username, password)
-            if ruolo:
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.ruolo = ruolo
-                st.rerun()
-            else:
-                st.error("❌ Nome utente o password errati")
+            if st.button("Accedi", key="login_btn"):
+                ruolo = login(username, password)
+                if ruolo:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.ruolo = ruolo
+                    st.rerun()
+                else:
+                    st.error("❌ Nome utente o password errati")
 
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-
 
 
 
@@ -1085,6 +1085,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
