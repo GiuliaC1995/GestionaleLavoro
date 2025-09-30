@@ -418,7 +418,7 @@ if st.session_state.ruolo == "utente":
             f"""
             <div style="display:flex; align-items:center; gap:15px;">
                 <h2 style="margin:0;">Benvenuto <b>{st.session_state.username}</b>! 👋</h2>
-                <img src="dna.gif" alt="DNA" style="width:60px; height:60px;">
+                <img src="DNA loop animation.gif" alt="DNA" style="width:60px; height:60px;">
             </div>
             """,
             unsafe_allow_html=True
@@ -1087,6 +1087,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
