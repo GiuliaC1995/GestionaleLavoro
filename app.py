@@ -861,7 +861,7 @@ elif st.session_state.ruolo == "capo":
     # ---------- HOME ----------
     if scelta_pagina_capo == "🏠 Home":
         st.markdown(f"#### Benvenuto **{st.session_state.username}**!👋")
-        st.write("Qui puoi avere una panoramica generale sulle attività di tutti gli utenti.")
+        st.write("Qui può avere una panoramica generale sulle attività di tutti gli utenti.")
 
         if df_all.empty:
             st.info("Nessuna attività registrata dagli utenti.")
@@ -1088,6 +1088,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
