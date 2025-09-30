@@ -244,7 +244,7 @@ if "df_att" not in st.session_state:
 st.markdown(
     """
     <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
-        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/DNA%20loop%20animation.gif"
+        <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif"
              alt="Logo DNA" style="width:90px; height:90px; margin-right:20px;">
         <h1 style="margin:0; font-size:46px; color:#2c3e50;">MedGenLab</h1>
     </div>
@@ -1089,6 +1089,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
