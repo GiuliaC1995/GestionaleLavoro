@@ -771,17 +771,20 @@ if st.session_state.ruolo == "utente":
             df_ref = df_periodo[df_periodo["MacroAttivita"] == "REFERTAZIONE"].copy()
             if not df_ref.empty:
                 st.markdown("**Referti: compilati vs validati**")
-                referti_counts = df_ref["Tipologia"].value_counts().reindex(
-                    ["Compilazione referti", "Rilettura e validazione referti"]
-                ).fillna(0)
-                
-                chart_ref = alt.Chart(referti_counts.reset_index()).mark_bar().encode(
-                    x=alt.X("index:N", title="Tipologia"),
-                    y="Tipologia:Q",
-                    color=alt.value("#ff9800")  # arancione
-                ).properties(width=600, height=400)
-                st.altair_chart(chart_ref, use_container_width=True)
+    
+                referti_counts = (
+                    df_ref.groupby("Tipologia")
+                    .size()
+                    .reset_index(name="Conteggio")
+                )
 
+                chart_ref = alt.Chart(referti_counts).mark_bar().encode(
+                    x=alt.X("Tipologia:N", title="Tipologia"),
+                    y=alt.Y("Conteggio:Q", title="Numero"),
+                    color=alt.value("#ff9800")
+                ).properties(width=600, height=400)
+
+               st.altair_chart(chart_ref, use_container_width=True)
             else:
                 st.info("Nessun referto registrato nel periodo selezionato.")
 
@@ -1088,6 +1091,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
