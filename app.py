@@ -833,9 +833,9 @@ if st.session_state.ruolo == "utente":
                     st.success("✅ Password cambiata e salvata su Google Sheets!")
                 except Exception as e:
                     st.warning(f"Password aggiornata localmente ma non su Google Sheets: {e}")
-if st.sidebar.button("🔄 Sincronizza adesso"):
+if st.sidebar.button("🔄 Sincronizza adesso", key="sync_user"):
     sync_now()
-if st.sidebar.button("🚪 Logout"):
+if st.sidebar.button("🚪 Logout", key="logout_user"):
     try:
         sync_now()
     except:
@@ -1073,9 +1073,9 @@ elif st.session_state.ruolo == "capo":
                 st.altair_chart(chart_camp_utenti, use_container_width=True)
 
 
-if st.sidebar.button("🔄 Sincronizza adesso"):
+if st.sidebar.button("🔄 Sincronizza adesso", key="sync_admin"):
     sync_now()
-if st.sidebar.button("🚪 Logout"):
+if st.sidebar.button("🚪 Logout", key="logout_admin"):
     try:
         sync_now()
     except:
@@ -1084,6 +1084,7 @@ if st.sidebar.button("🚪 Logout"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
