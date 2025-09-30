@@ -255,25 +255,51 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # CSS per il box login
+    # CSS migliorato
     st.markdown("""
         <style>
+        body {
+            background: linear-gradient(135deg, #e0f7fa, #e1bee7);
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+        }
         .login-box {
             background-color: white;
             padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-            width: 350px;
-            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            width: 380px;
             text-align: center;
+        }
+        .login-box h2 {
+            margin-bottom: 1rem;
+        }
+        .stTextInput>div>div>input {
+            border-radius: 8px;
+            padding: 0.6rem;
+        }
+        .stButton>button {
+            width: 100%;
+            border-radius: 8px;
+            padding: 0.6rem;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+        }
+        .stButton>button:hover {
+            background-color: #45a049;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Box centrato
-    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=100)
-    st.subheader("🔑 Login")
+    # Struttura login
+    st.markdown("<div class='login-container'><div class='login-box'>", unsafe_allow_html=True)
+    st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=120)
+    st.markdown("<h2>🔑 Login</h2>", unsafe_allow_html=True)
 
     username = st.text_input("Nome utente")
     password = st.text_input("Password", type="password")
@@ -288,8 +314,9 @@ if not st.session_state.logged_in:
         else:
             st.error("❌ Nome utente o password errati")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
+
 
 
 # =====================================
@@ -1080,6 +1107,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
