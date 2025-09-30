@@ -280,7 +280,6 @@ if not st.session_state.logged_in:
     with col2:
         with st.form("login_form"):
             # CSS per dare lo stile al contenitore
-            st.markdown("<div class='login-box'>", unsafe_allow_html=True)
             st.markdown(
                 """
                 <style>
@@ -291,8 +290,7 @@ if not st.session_state.logged_in:
                     background-color: white; /* <-- sfondo bianco */
                 }
                 </style>
-                """,
-                unsafe_allow_html=True
+                """
             )
             
 
@@ -1149,6 +1147,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
