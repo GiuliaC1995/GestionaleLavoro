@@ -246,7 +246,7 @@ st.markdown(
     <div style="display:flex; align-items:center;">
         <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/icons8-biotecnologia-100.png" 
              alt="Logo" style="width:80px; margin-right:15px;">
-        <h1 style="margin:0;">MedGenLab</h1>
+        <h1 style="margin:1;">MedGenLab</h1>
     </div>
     """,
     unsafe_allow_html=True
@@ -1078,6 +1078,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
