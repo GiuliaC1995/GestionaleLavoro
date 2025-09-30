@@ -964,13 +964,17 @@ elif st.session_state.ruolo == "capo":
                 st.altair_chart(chart_admin_ref, use_container_width=True)
 
                 st.markdown("**Referti per malattia**")
-                ref_mal = df_ref["TipoMalattiaRef"].value_counts()
-                chart_admin_ref_mal = alt.Chart(ref_mal.reset_index()).mark_bar().encode(
-                  x=alt.X("index:N", title="Malattia"),
-                  y="TipoMalattiaRef:Q",
-                  color=alt.value("#f44336")  # rosso
+                ref_mal = df_ref["TipoMalattiaRef"].value_counts().reset_index()
+                ref_mal.columns = ["Malattia", "Conteggio"]
+
+                chart_admin_ref_mal = alt.Chart(ref_mal).mark_bar().encode(
+                    x=alt.X("Malattia:N", title="Malattia"),
+                    y=alt.Y("Conteggio:Q", title="Numero"),
+                    color=alt.value("#f44336")  # rosso
                 ).properties(width=600, height=400)
+
                 st.altair_chart(chart_admin_ref_mal, use_container_width=True)
+
 
             # Suddivisione campioni per malattia
             df_acc = df_periodo[df_periodo["MacroAttivita"] == "ACCETTAZIONE"].copy()
@@ -1093,6 +1097,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
