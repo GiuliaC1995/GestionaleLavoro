@@ -260,15 +260,6 @@ if not st.session_state.logged_in:
         .stApp {
             background-color: #00bcd4;
         }
-        .login-box {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            width: 380px;
-            margin: auto;
-            text-align: center;
-        }
         .stButton>button {
             width: 100%;
             border-radius: 6px;
@@ -1146,6 +1137,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
