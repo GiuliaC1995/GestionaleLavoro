@@ -255,28 +255,51 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
-    # Sfondo colorato + box stile login
+    # Sfondo colorato + stile box
     st.markdown("""
         <style>
         .stApp {
             background-color: #00bcd4;
         }
-        /* Box bianco che prende i primi 3 elementi (username, password, bottone) */
-        div[data-testid="stVerticalBlock"] > div:nth-child(-n+3) {
+        .login-box {
             background-color: white;
-            padding: 1.5rem;
+            padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             width: 400px;
             margin: auto;
         }
+        .stButton>button {
+            width: 100%;
+            border-radius: 6px;
+            padding: 0.6rem;
+            background-color: #2196f3;
+            color: white;
+            font-size: 16px;
+            border: none;
+        }
+        .stButton>button:hover {
+            background-color: #1976d2;
+        }
         </style>
     """, unsafe_allow_html=True)
 
+    # Titolo sopra
+    st.markdown(
+        """
+        <div style="text-align:center; margin-bottom:1rem;">
+            <img src="https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif"
+                 alt="Logo DNA" style="width:100px; height:100px;"><br>
+            <h2 style="margin:0; color:white;">MedGenLab</h2>
+        </div>
+        """, unsafe_allow_html=True
+    )
 
-    # Colonne per centrare
+    # Box unico
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
+        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+
         username = st.text_input("Nome utente", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
 
@@ -290,7 +313,10 @@ if not st.session_state.logged_in:
             else:
                 st.error("❌ Nome utente o password errati")
 
+        st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
+
 
 # =====================================
 # Sidebar: info utente e azioni
@@ -1127,6 +1153,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
