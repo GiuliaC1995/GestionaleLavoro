@@ -255,9 +255,29 @@ st.markdown(
 
 
 if not st.session_state.logged_in:
+    # CSS per il box login
+    st.markdown("""
+        <style>
+        .login-box {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            width: 350px;
+            margin: auto;
+            text-align: center;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Box centrato
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    st.image("https://raw.githubusercontent.com/GiuliaC1995/GestionaleLavoro/main/dna.gif", width=100)
     st.subheader("🔑 Login")
+
     username = st.text_input("Nome utente")
     password = st.text_input("Password", type="password")
+
     if st.button("Accedi", key="login_btn"):
         ruolo = login(username, password)
         if ruolo:
@@ -267,6 +287,8 @@ if not st.session_state.logged_in:
             st.rerun()
         else:
             st.error("❌ Nome utente o password errati")
+
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 
@@ -1058,6 +1080,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
