@@ -1053,8 +1053,13 @@ elif st.session_state.ruolo == "capo":
                 if not pd.api.types.is_datetime64_any_dtype(df_user["Data"]):
                     df_user["Data"] = pd.to_datetime(df_user["Data"], errors="coerce")
 
-                data_min = df_user["Data"].dropna().min().date()
-                data_max = df_user["Data"].dropna().max().date()
+                if df_user["Data"].notna().any():
+                    data_min = df_user["Data"].dropna().min().date()
+                    data_max = df_user["Data"].dropna().max().date()
+                else:
+                    from datetime import date
+                    data_min = date.today()
+                    data_max = date.today()
 
                 colA, colB, colC = st.columns([1, 1, 1])
                 with colA:
@@ -1213,6 +1218,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
