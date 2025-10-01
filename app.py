@@ -1036,121 +1036,124 @@ elif st.session_state.ruolo == "capo":
 
     # ---------- MONITORAGGIO PER UTENTE ----------
     elif scelta_pagina_capo == "👩‍🔬 Monitoraggio per Utente":
-    st.subheader("👩‍🔬 Monitoraggio per Utente")
+        st.subheader("👩‍🔬 Monitoraggio per Utente")
 
-    if df_all.empty:
-        st.info("Nessuna attività registrata dagli utenti.")
-    else:
-        utente_sel = st.selectbox("Seleziona utente", sorted(df_all["NomeUtente"].dropna().unique()))
-        df_user = df_all[df_all["NomeUtente"] == utente_sel]
-
-        if df_user.empty:
-            st.info(f"Nessuna attività per {utente_sel}.")
+        if df_all.empty:
+            st.info("Nessuna attività registrata dagli utenti.")
         else:
-            # 📑 --- TABELLINA PRIMA ---
-            st.subheader(f"📑 Elenco attività di {utente_sel}")
+            utente_sel = st.selectbox("Seleziona utente", sorted(df_all["NomeUtente"].dropna().unique()))
+            df_user = df_all[df_all["NomeUtente"] == utente_sel]
 
-            if not pd.api.types.is_datetime64_any_dtype(df_user["Data"]):
-                df_user["Data"] = pd.to_datetime(df_user["Data"], errors="coerce")
-
-            data_min = df_user["Data"].dropna().min().date()
-            data_max = df_user["Data"].dropna().max().date()
-
-            colA, colB, colC = st.columns([1, 1, 1])
-            with colA:
-                start_date = st.date_input("Da", data_min, key="admin_user_tbl_start")
-            with colB:
-                end_date = st.date_input("A", data_max, key="admin_user_tbl_end")
-            with colC:
-                page_size = st.selectbox("Righe per pagina", [10, 20, 50, 100], index=1, key="admin_user_tbl_pagesize")
-
-            df_filtered = df_user[
-                df_user["Data"].notna()
-                & (df_user["Data"].dt.date >= start_date)
-                & (df_user["Data"].dt.date <= end_date)
-            ].sort_values("Data", ascending=False)
-
-            search_term = st.text_input("🔍 Cerca nelle attività (note, attività, tipologia)...", key="admin_user_tbl_search")
-            if search_term:
-                df_filtered = df_filtered[
-                    df_filtered.apply(lambda row: row.astype(str).str.contains(search_term, case=False).any(), axis=1)
-                ]
-
-            total = len(df_filtered)
-            if total == 0:
-                st.info("Nessuna attività nel periodo o filtro selezionato.")
+            if df_user.empty:
+                st.info(f"Nessuna attività per {utente_sel}.")
             else:
-                total_pages = (total + page_size - 1) // page_size
-                page = st.number_input("Pagina", min_value=1, max_value=total_pages, value=1, step=1, key="admin_user_tbl_page")
-                start = (page - 1) * page_size
-                end = min(start + page_size, total)
+                # 📑 --- TABELLINA PRIMA ---
+                st.subheader(f"📑 Elenco attività di {utente_sel}")
 
-                st.caption(f"Mostrando {start + 1}–{end} di {total} record")
-                st.dataframe(df_filtered.iloc[start:end])
+                if not pd.api.types.is_datetime64_any_dtype(df_user["Data"]):
+                    df_user["Data"] = pd.to_datetime(df_user["Data"], errors="coerce")
 
-                st.download_button(
-                    "⬇️ Scarica risultato (CSV)",
-                    df_filtered.to_csv(index=False).encode("utf-8"),
-                    f"attivita_{utente_sel}.csv",
-                    "text/csv",
-                    key="admin_user_tbl_download"
+                data_min = df_user["Data"].dropna().min().date()
+                data_max = df_user["Data"].dropna().max().date()
+
+                colA, colB, colC = st.columns([1, 1, 1])
+                with colA:
+                    start_date = st.date_input("Da", data_min, key="admin_user_tbl_start")
+                with colB:
+                    end_date = st.date_input("A", data_max, key="admin_user_tbl_end")
+                with colC:
+                    page_size = st.selectbox("Righe per pagina", [10, 20, 50, 100], index=1, key="admin_user_tbl_pagesize")
+
+                df_filtered = df_user[
+                    df_user["Data"].notna()
+                    & (df_user["Data"].dt.date >= start_date)
+                    & (df_user["Data"].dt.date <= end_date)
+                ].sort_values("Data", ascending=False)
+
+                search_term = st.text_input(
+                    "🔍 Cerca nelle attività (note, attività, tipologia)...",
+                    key="admin_user_tbl_search"
                 )
+                if search_term:
+                    df_filtered = df_filtered[
+                        df_filtered.apply(lambda row: row.astype(str).str.contains(search_term, case=False).any(), axis=1)
+                    ]
 
-            # 📊 --- GRAFICI DOPO ---
-            st.markdown("---")
-            st.subheader("📊 Analisi grafica")
+                total = len(df_filtered)
+                if total == 0:
+                    st.info("Nessuna attività nel periodo o filtro selezionato.")
+                else:
+                    total_pages = (total + page_size - 1) // page_size
+                    page = st.number_input("Pagina", min_value=1, max_value=total_pages, value=1, step=1, key="admin_user_tbl_page")
+                    start = (page - 1) * page_size
+                    end = min(start + page_size, total)
 
-            # Usa lo stesso df filtrato anche per i grafici
-            df_grafici = df_filtered.copy()
+                    st.caption(f"Mostrando {start + 1}–{end} di {total} record")
+                    st.dataframe(df_filtered.iloc[start:end])
 
-            tot_ore = df_grafici["Ore"].fillna(0).sum() + df_grafici["Minuti"].fillna(0).sum() / 60
-            st.markdown(f"""
-            <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
-            <h3>⏱️ Ore Totali di {utente_sel}</h3>
-            <h2>{tot_ore:.1f}</h2>
-            </div>
-            """, unsafe_allow_html=True)
+                    st.download_button(
+                        "⬇️ Scarica risultato (CSV)",
+                        df_filtered.to_csv(index=False).encode("utf-8"),
+                        f"attivita_{utente_sel}.csv",
+                        "text/csv",
+                        key="admin_user_tbl_download"
+                    )
 
-            st.markdown("**Ore per MacroAttività**")
-            ore_macro = df_grafici.groupby("MacroAttivita")["Ore"].sum()
-            chart = alt.Chart(ore_macro.reset_index()).mark_bar().encode(
-                x=alt.X("MacroAttivita:N", sort='-y'),
-                y="Ore:Q",
-                color=alt.value("#4caf50")
-            ).properties(width=600, height=400)
-            st.altair_chart(chart, use_container_width=True)
+                # 📊 --- GRAFICI DOPO ---
+                st.markdown("---")
+                st.subheader("📊 Analisi grafica")
 
-            st.markdown("**Numero referti per tipologia**")
-            ref_user = df_grafici[df_grafici["MacroAttivita"] == "REFERTAZIONE"]
-            if not ref_user.empty:
-                ref_user_counts = ref_user["Tipologia"].value_counts().reset_index()
-                ref_user_counts.columns = ["Tipologia", "Conteggio"]
+                # Usa lo stesso df filtrato anche per i grafici
+                df_grafici = df_filtered.copy()
 
-                chart_admin_ref_user = alt.Chart(ref_user_counts).mark_bar().encode(
-                    x=alt.X("Tipologia:N", title="Tipologia"),
-                    y=alt.Y("Conteggio:Q", title="Numero"),
-                    color=alt.value("#e91e63")  # rosa
+                tot_ore = df_grafici["Ore"].fillna(0).sum() + df_grafici["Minuti"].fillna(0).sum() / 60
+                st.markdown(f"""
+                <div style="background-color:#e8f5e9;padding:15px;border-radius:10px;text-align:center">
+                <h3>⏱️ Ore Totali di {utente_sel}</h3>
+                <h2>{tot_ore:.1f}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown("**Ore per MacroAttività**")
+                ore_macro = df_grafici.groupby("MacroAttivita")["Ore"].sum()
+                chart = alt.Chart(ore_macro.reset_index()).mark_bar().encode(
+                    x=alt.X("MacroAttivita:N", sort='-y'),
+                    y="Ore:Q",
+                    color=alt.value("#4caf50")
                 ).properties(width=600, height=400)
+                st.altair_chart(chart, use_container_width=True)
 
-                st.altair_chart(chart_admin_ref_user, use_container_width=True)
-            else:
-                st.info("Nessun referto registrato per questo utente.")
+                st.markdown("**Numero referti per tipologia**")
+                ref_user = df_grafici[df_grafici["MacroAttivita"] == "REFERTAZIONE"]
+                if not ref_user.empty:
+                    ref_user_counts = ref_user["Tipologia"].value_counts().reset_index()
+                    ref_user_counts.columns = ["Tipologia", "Conteggio"]
 
-            st.markdown("**Campioni per malattia**")
-            camp_user = df_grafici[df_grafici["MacroAttivita"] == "ACCETTAZIONE"]
-            if not camp_user.empty:
-                camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
-                camp_user_counts.columns = ["Malattia", "Conteggio"]
+                    chart_admin_ref_user = alt.Chart(ref_user_counts).mark_bar().encode(
+                        x=alt.X("Tipologia:N", title="Tipologia"),
+                        y=alt.Y("Conteggio:Q", title="Numero"),
+                        color=alt.value("#e91e63")  # rosa
+                    ).properties(width=600, height=400)
 
-                chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
-                    x=alt.X("Malattia:N", title="Malattia"),
-                    y=alt.Y("Conteggio:Q", title="Numero"),
-                    color=alt.value("#3f51b5")  # indaco
-                ).properties(width=600, height=400)
+                    st.altair_chart(chart_admin_ref_user, use_container_width=True)
+                else:
+                    st.info("Nessun referto registrato per questo utente.")
 
-                st.altair_chart(chart_admin_camp_user, use_container_width=True)
-            else:
-                st.info("Nessun campione registrato per questo utente.")
+                st.markdown("**Campioni per malattia**")
+                camp_user = df_grafici[df_grafici["MacroAttivita"] == "ACCETTAZIONE"]
+                if not camp_user.empty:
+                    camp_user_counts = camp_user["TipoMalattia"].value_counts().reset_index()
+                    camp_user_counts.columns = ["Malattia", "Conteggio"]
+
+                    chart_admin_camp_user = alt.Chart(camp_user_counts).mark_bar().encode(
+                        x=alt.X("Malattia:N", title="Malattia"),
+                        y=alt.Y("Conteggio:Q", title="Numero"),
+                        color=alt.value("#3f51b5")  # indaco
+                    ).properties(width=600, height=400)
+
+                    st.altair_chart(chart_admin_camp_user, use_container_width=True)
+                else:
+                    st.info("Nessun campione registrato per questo utente.")
 
 
     # ---------- MONITORAGGIO PER ATTIVITÀ/MALATTIA ----------
@@ -1210,6 +1213,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
