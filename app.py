@@ -529,14 +529,17 @@ if st.session_state.ruolo == "utente":
                     st.success("✅ Attività salvata!")
                     
                     # 🔄 Reset sicuro: elimino i valori salvati nel session_state
-                    for key in ["macro_form_tmp", "tipologia_form_tmp", "attivita_form_tmp",
-                                "note_tmp", "ore_tmp", "min_tmp",
+                    for key in ["tipologia_form_tmp", "attivita_form_tmp",
+                                "note_tmp", "min_tmp",
                                 "num_campioni", "tipo_malattia",
                                 "num_referti", "tipo_malattia_ref"]:
                         if key in st.session_state:
                             del st.session_state[key]
 
-                    # Ora ricarico la pagina coi widget puliti
+                    # Reset specifico per MacroAttività e Ore
+                    st.session_state["macro_form_tmp"] = None
+                    st.session_state["ore_tmp"] = None
+
                     st.rerun()
 
     
@@ -1153,6 +1156,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
