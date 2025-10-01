@@ -528,19 +528,15 @@ if st.session_state.ruolo == "utente":
                         st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
                     st.success("✅ Attività salvata!")
                     
-                    # 🔄 Reset dei campi nel session_state
-                    st.session_state["macro_form_tmp"] = "-- Seleziona --"
-                    st.session_state["tipologia_form_tmp"] = "-- Seleziona --"
-                    st.session_state["attivita_form_tmp"] = "-- Seleziona --"
-                    st.session_state["note_tmp"] = ""
-                    st.session_state["ore_tmp"] = 0
-                    st.session_state["min_tmp"] = 0
-                    st.session_state["num_campioni"] = 0
-                    st.session_state["tipo_malattia"] = "-- Seleziona --"
-                    st.session_state["num_referti"] = 0
-                    st.session_state["tipo_malattia_ref"] = "-- Seleziona --"
+                    # 🔄 Reset sicuro: elimino i valori salvati nel session_state
+                    for key in ["macro_form_tmp", "tipologia_form_tmp", "attivita_form_tmp",
+                                "note_tmp", "ore_tmp", "min_tmp",
+                                "num_campioni", "tipo_malattia",
+                                "num_referti", "tipo_malattia_ref"]:
+                        if key in st.session_state:
+                            del st.session_state[key]
 
-                    # Poi ricarico la pagina
+                    # Ora ricarico la pagina coi widget puliti
                     st.rerun()
 
     
@@ -1157,6 +1153,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
