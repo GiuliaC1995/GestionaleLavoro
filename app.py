@@ -528,17 +528,8 @@ if st.session_state.ruolo == "utente":
                         st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
                     st.success("✅ Attività salvata!")
                     
-                    # 🔄 Reset campi dopo il salvataggio
-                    st.session_state["macro_form_tmp"] = "-- Seleziona --"
-                    st.session_state["tipologia_form_tmp"] = "-- Seleziona --"
-                    st.session_state["attivita_form_tmp"] = "-- Seleziona --"
-                    st.session_state["note_tmp"] = ""
-                    st.session_state["ore_tmp"] = 0
-                    st.session_state["min_tmp"] = 0
-                    st.session_state["num_campioni"] = 0
-                    st.session_state["tipo_malattia"] = "-- Seleziona --"
-                    st.session_state["num_referti"] = 0
-                    st.session_state["tipo_malattia_ref"] = "-- Seleziona --"
+                    # 🔄 Reset form con refresh
+                    st.rerun()
 
     
 
@@ -1154,6 +1145,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
