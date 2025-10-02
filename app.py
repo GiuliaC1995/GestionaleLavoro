@@ -63,6 +63,11 @@ def save_data(sheet, df):
         )
     sheet.clear()
     sheet.update([df_to_save.columns.tolist()] + df_to_save.astype(str).values.tolist())
+    
+def append_data(sheet, new_row_df):
+    # Prende solo la prima riga del DataFrame e la trasforma in lista
+    new_row = new_row_df.astype(str).values.tolist()[0]
+    sheet.append_row(new_row)
 
 def sync_now():
     try:
@@ -523,9 +528,10 @@ if st.session_state.ruolo == "utente":
                     }])
                     st.session_state.df_att = pd.concat([st.session_state.df_att, new_row], ignore_index=True)
                     try:
-                        save_data(st.session_state.sheet, st.session_state.df_att)
+                        append_data(st.session_state.sheet, new_row)
                     except Exception as e:
                         st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
+
                     st.success("✅ Attività salvata!")
                     
                     # 🔄 Reset sicuro: elimino le chiavi dal session_state
@@ -1221,6 +1227,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
