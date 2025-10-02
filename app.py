@@ -1069,10 +1069,13 @@ elif st.session_state.ruolo == "capo":
                 with colC:
                     page_size = st.selectbox("Righe per pagina", [10, 20, 50, 100], index=1, key="admin_user_tbl_pagesize")
 
+                start_date_dt = pd.to_datetime(start_date)
+                end_date_dt = pd.to_datetime(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+
                 df_filtered = df_user[
                     df_user["Data"].notna()
-                    & (df_user["Data"].dt.date >= start_date)
-                    & (df_user["Data"].dt.date <= end_date)
+                    & (df_user["Data"] >= start_date_dt)
+                    & (df_user["Data"] <= end_date_dt)
                 ].sort_values("Data", ascending=False)
 
                 search_term = st.text_input(
@@ -1218,6 +1221,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
