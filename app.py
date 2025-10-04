@@ -56,35 +56,59 @@ def load_data(sheet):
     return df
 
 def save_data(sheet, df):
-    # Legge i dati correnti sul foglio
-    existing_data = pd.DataFrame(sheet.get_all_records())
-    if not existing_data.empty:
+    try:
+        # 🔹 Legge i dati correnti dal foglio
+        existing_data = pd.DataFrame(sheet.get_all_records())
+
+        # 🔹 Se il foglio è vuoto, salva tutto
+        if existing_data.empty:
+            if "Data" in df.columns:
+                df["Data"] = df["Data"].apply(
+                    lambda x: x.isoformat(sep=" ") if pd.notna(x) and not isinstance(x, str) else str(x)
+                )
+            sheet.clear()
+            sheet.update([df.columns.tolist()] + df.astype(str).values.tolist())
+            return
+
+        # 🔹 Allinea le colonne
+        for col in df.columns:
+            if col not in existing_data.columns:
+                existing_data[col] = ""
+
         existing_data["ID"] = pd.to_numeric(existing_data["ID"], errors="coerce")
-    else:
-        existing_data = pd.DataFrame(columns=df.columns)
+        df["ID"] = pd.to_numeric(df["ID"], errors="coerce")
 
-    df["ID"] = pd.to_numeric(df["ID"], errors="coerce")
+        updated = existing_data.copy()
 
-    # Merge: aggiorna righe esistenti o aggiunge nuove
-    updated = pd.concat([existing_data[~existing_data["ID"].isin(df["ID"])], df], ignore_index=True)
+        # 🔹 Aggiorna o aggiunge righe in base all'ID
+        for _, row in df.iterrows():
+            mask = updated["ID"] == row["ID"]
+            if mask.any():
+                for col in df.columns:
+                    updated.loc[mask, col] = row[col]
+            else:
+                updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-    # Conversione date
-    if "Data" in updated.columns:
-        updated["Data"] = updated["Data"].apply(
-            lambda x: x.isoformat(sep=" ") if pd.notna(x) else ""
-        )
+        # 🔹 Conversione sicura delle date
+        if "Data" in updated.columns:
+            updated["Data"] = updated["Data"].apply(
+                lambda x: x.isoformat(sep=" ") if pd.notna(x) and not isinstance(x, str) else str(x)
+            )
 
-    # Sovrascrive in blocco solo se necessario
-    sheet.clear()
-    sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
+        # 🔹 Salvataggio finale (una sola scrittura)
+        sheet.clear()
+        sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
+
+    except Exception as e:
+        st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
 
     
 def append_data(sheet, new_row_df):
-    # Se manca la data, la assegna automaticamente
+    # Se manca la data, la aggiunge automaticamente
     if "Data" in new_row_df.columns and pd.isna(new_row_df.loc[0, "Data"]):
         new_row_df.loc[0, "Data"] = datetime.now()
 
-    # Converte la riga in lista e la aggiunge al foglio
+    # Aggiunge la nuova riga
     new_row = new_row_df.astype(str).values.tolist()[0]
     sheet.append_row(new_row)
 
@@ -1246,6 +1270,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
