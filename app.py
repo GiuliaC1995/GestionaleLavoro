@@ -56,16 +56,35 @@ def load_data(sheet):
     return df
 
 def save_data(sheet, df):
-    df_to_save = df.copy()
-    if "Data" in df_to_save.columns:
-        df_to_save["Data"] = df_to_save["Data"].apply(
+    # Legge i dati correnti sul foglio
+    existing_data = pd.DataFrame(sheet.get_all_records())
+    if not existing_data.empty:
+        existing_data["ID"] = pd.to_numeric(existing_data["ID"], errors="coerce")
+    else:
+        existing_data = pd.DataFrame(columns=df.columns)
+
+    df["ID"] = pd.to_numeric(df["ID"], errors="coerce")
+
+    # Merge: aggiorna righe esistenti o aggiunge nuove
+    updated = pd.concat([existing_data[~existing_data["ID"].isin(df["ID"])], df], ignore_index=True)
+
+    # Conversione date
+    if "Data" in updated.columns:
+        updated["Data"] = updated["Data"].apply(
             lambda x: x.isoformat(sep=" ") if pd.notna(x) else ""
         )
+
+    # Sovrascrive in blocco solo se necessario
     sheet.clear()
-    sheet.update([df_to_save.columns.tolist()] + df_to_save.astype(str).values.tolist())
+    sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
+
     
 def append_data(sheet, new_row_df):
-    # Prende solo la prima riga del DataFrame e la trasforma in lista
+    # Se manca la data, la assegna automaticamente
+    if "Data" in new_row_df.columns and pd.isna(new_row_df.loc[0, "Data"]):
+        new_row_df.loc[0, "Data"] = datetime.now()
+
+    # Converte la riga in lista e la aggiunge al foglio
     new_row = new_row_df.astype(str).values.tolist()[0]
     sheet.append_row(new_row)
 
@@ -1227,6 +1246,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
