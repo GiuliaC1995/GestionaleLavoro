@@ -66,17 +66,19 @@ def load_data(sheet):
 
 
 def save_data(sheet, df):
-    """Salva i dati in formato anno-giorno-mese, senza riconversioni automatiche."""
+    """Salva i dati in formato anno-giorno-mese e rimuove dal foglio le righe eliminate."""
     try:
+        # 🔹 Legge tutti i dati attuali dallo Sheet
         existing_data = pd.DataFrame(sheet.get_all_records())
 
-        # 🔹 Se il foglio è vuoto, salva tutto
+        # 🔹 Se lo Sheet è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            updated = existing_data.copy()
+            # 🔹 Tiene solo le righe ancora presenti nel DataFrame locale
+            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
 
-            # 🔹 Aggiorna o aggiunge solo le righe modificate
+            # 🔹 Aggiorna o aggiunge nuove righe
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
@@ -91,19 +93,19 @@ def save_data(sheet, df):
                 lambda x: x.strftime("%Y-%d-%m %H:%M") if pd.notna(x) else ""
             )
 
-        # Conversione numerica sicura
+        # 🔹 Conversione sicura per i numeri
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # Scrittura sullo Sheet
+        # 🔹 Riscrive tutto il foglio
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # Ricarica in cache
+        # 🔄 Aggiorna il DataFrame in cache
         st.session_state.df_att = load_data(sheet)
 
-        st.success("✅ Dati salvati correttamente (formato %Y-%d-%m).")
+        st.success("✅ Dati sincronizzati correttamente (formato %Y-%d-%m, eliminazioni incluse).")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
@@ -1283,6 +1285,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
