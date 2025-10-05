@@ -66,46 +66,63 @@ def load_data(sheet):
 
 
 def save_data(sheet, df):
-    """Salva i dati in formato anno-giorno-mese e rimuove dal foglio le righe eliminate."""
+    """Salva i dati mantenendo intatte le date esistenti nello sheet, senza sovrascriverle."""
     try:
-        # 🔹 Legge tutti i dati attuali dallo Sheet
         existing_data = pd.DataFrame(sheet.get_all_records())
 
-        # 🔹 Se lo Sheet è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            # 🔹 Tiene solo le righe ancora presenti nel DataFrame locale
-            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
+            # 🔹 Partiamo dai dati esistenti
+            updated = existing_data.copy()
 
-            # 🔹 Aggiorna o aggiunge nuove righe
+            # 🔹 Aggiorna solo le righe modificate o nuove
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
                     for col in df.columns:
-                        updated.loc[mask, col] = row[col]
+                        # 👇 Se la colonna è "Data" e nel DF è vuota o NaT, NON toccarla
+                        if col == "Data":
+                            if pd.isna(row["Data"]) or str(row["Data"]).strip() == "":
+                                continue
+                            else:
+                                updated.loc[mask, col] = row[col]
+                        else:
+                            updated.loc[mask, col] = row[col]
                 else:
+                    # Aggiunge solo le nuove righe (es. nuove attività)
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Salva la data esattamente nel formato anno-giorno-mese
+            # 🔹 Rimuove righe eliminate (ID non più presenti)
+            updated = updated[updated["ID"].isin(df["ID"])]
+
+        # ✅ Mantiene SEMPRE il formato anno-giorno-mese se la data è valida
         if "Data" in updated.columns:
-            updated["Data"] = updated["Data"].apply(
-                lambda x: x.strftime("%Y-%d-%m %H:%M") if pd.notna(x) else ""
-            )
+            def fix_date_safe(x):
+                if pd.isna(x) or str(x).strip() == "":
+                    return ""
+                try:
+                    parsed = pd.to_datetime(str(x), errors="coerce", dayfirst=False)
+                    if pd.notna(parsed):
+                        return parsed.strftime("%Y-%d-%m %H:%M")
+                    return str(x).strip()
+                except Exception:
+                    return str(x).strip()
+
+            updated["Data"] = updated["Data"].apply(fix_date_safe)
 
         # 🔹 Conversione sicura per i numeri
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Riscrive tutto il foglio
+        # 🔹 Scrive tutto sullo Sheet
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna il DataFrame in cache
         st.session_state.df_att = load_data(sheet)
 
-        st.success("✅ Dati sincronizzati correttamente (formato %Y-%d-%m, eliminazioni incluse).")
+        st.success("✅ Dati salvati senza alterare le date già presenti nello Sheet.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
@@ -1285,6 +1302,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
