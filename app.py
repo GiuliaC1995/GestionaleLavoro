@@ -84,40 +84,35 @@ def save_data(sheet, df):
                     # Se è una nuova riga, la aggiunge
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione robusta e coerente della colonna Data
+        # ✅ Conversione robusta e coerente della colonna Data (ISO standard)
         if "Data" in updated.columns:
             def fix_date(x):
                 if pd.isna(x) or str(x).strip().lower() in ["", "none", "nan", "nat"]:
-                    return datetime.now().strftime("%Y-%m-%d %H:%M")
+                    return datetime.now().strftime("%Y-%m-%d %H:%M")  # ISO standard
+
                 if isinstance(x, pd.Timestamp):
                     return x.to_pydatetime().strftime("%Y-%m-%d %H:%M")
+
                 if isinstance(x, datetime):
                     return x.strftime("%Y-%m-%d %H:%M")
+
                 if isinstance(x, str):
-                    # primo tentativo: formato comune europeo o ISO
+                    # 🔹 prova i formati più comuni (italiano, ISO, invertito)
+                    for fmt in ["%Y-%m-%d %H:%M", "%Y-%d-%m %H:%M", "%d/%m/%Y %H:%M", "%d-%m-%Y %H:%M", "%Y-%m-%d"]:
+                        try:
+                            parsed = datetime.strptime(x.strip(), fmt)
+                            return parsed.strftime("%Y-%m-%d %H:%M")
+                        except Exception:
+                            continue
+                    # 🔹 fallback parsing automatico con dayfirst=True
                     try:
-                        parsed = pd.to_datetime(
-                            x,
-                            errors="coerce",
-                            dayfirst=True,
-                            infer_datetime_format=True
-                        )
+                        parsed = pd.to_datetime(x, errors="coerce", dayfirst=True, infer_datetime_format=True)
                         if pd.notna(parsed):
                             return parsed.strftime("%Y-%m-%d %H:%M")
                     except Exception:
                         pass
-                    # secondo tentativo: caso invertito anno-giorno-mese
-                    try:
-                        parsed = pd.to_datetime(
-                            x,
-                            format="%Y-%d-%m %H:%M",
-                            errors="coerce"
-                        )
-                        if pd.notna(parsed):
-                            return parsed.strftime("%Y-%m-%d %H:%M")
-                    except Exception:
-                        pass
-                # fallback finale: data e ora attuale
+
+                # 🔹 fallback finale
                 return datetime.now().strftime("%Y-%m-%d %H:%M")
 
             updated["Data"] = updated["Data"].apply(fix_date)
@@ -134,11 +129,10 @@ def save_data(sheet, df):
         # 🔄 Aggiorna i dati in memoria
         st.session_state.df_att = load_data(sheet)
 
-        st.success("✅ Dati sincronizzati correttamente e date uniformi.")
+        st.success("✅ Dati sincronizzati correttamente e date uniformi (YYYY-MM-DD HH:MM).")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
-
 
 
 def append_data(sheet, new_row_df):
@@ -1314,6 +1308,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
