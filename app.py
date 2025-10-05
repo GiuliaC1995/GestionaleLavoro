@@ -243,7 +243,8 @@ macro_tipologia_attivita = {
             "Analisi molecolare",
             "Digestioni",
             "Blot",
-            "Ibridazioni"
+            "Ibridazioni",
+            "Genotipizzazione OA"
         ],
         "Manutenzione strumenti": [
             "Pulizia ABI e/o cambio capillari",
@@ -268,7 +269,8 @@ macro_tipologia_attivita = {
     "REFERTAZIONE": {
         "Compilazione referti": [
             "Calcolo coverage e OMIM",
-            "Stesura bozza referto"
+            "Stesura bozza referto",
+            "Trascrizione referti"
         ],
         "Rilettura e validazione referti": [
             "NGS",
@@ -1302,6 +1304,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
