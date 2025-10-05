@@ -46,23 +46,16 @@ def load_data(sheet):
     df = pd.DataFrame(data)
 
     if df.empty:
-        df = pd.DataFrame(columns=[
+        return pd.DataFrame(columns=[
             "ID","NomeUtente","Data","MacroAttivita","Tipologia","Attivita",
             "Note","Ore","Minuti","NumCampioni","TipoMalattia","NumReferti","TipoMalattiaRef"
         ])
-        return df
 
-    # ✅ Conversione tollerante in formato anno-giorno-mese
+    # ✅ Converte solo se serve, mantenendo il formato %Y-%d-%m
     if "Data" in df.columns:
-        def parse_date(x):
-            if pd.isna(x) or str(x).strip() == "":
-                return pd.NaT
-            try:
-                return pd.to_datetime(str(x).strip(), format="%Y-%d-%m %H:%M", errors="coerce")
-            except Exception:
-                return pd.to_datetime(str(x).strip(), errors="coerce")
-
-        df["Data"] = df["Data"].apply(parse_date)
+        df["Data"] = pd.to_datetime(
+            df["Data"], format="%Y-%d-%m %H:%M", errors="coerce"
+        )
 
     # Conversione numerica sicura
     for col in ["Ore","Minuti","NumCampioni","NumReferti"]:
@@ -73,82 +66,47 @@ def load_data(sheet):
 
 
 def save_data(sheet, df):
+    """Salva i dati in formato anno-giorno-mese, senza riconversioni automatiche."""
     try:
-        # 🔹 Legge sempre la versione più aggiornata del foglio
         existing_data = pd.DataFrame(sheet.get_all_records())
 
         # 🔹 Se il foglio è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            # 🔹 Mantiene solo le righe presenti nel DataFrame locale (gestisce eliminazioni)
-            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
+            updated = existing_data.copy()
 
-            # 🔹 Aggiorna o aggiunge le righe
+            # 🔹 Aggiorna o aggiunge solo le righe modificate
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
                     for col in df.columns:
                         updated.loc[mask, col] = row[col]
                 else:
-                    # Se è una nuova riga, la aggiunge
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione robusta e coerente della colonna Data
+        # ✅ Salva la data esattamente nel formato anno-giorno-mese
         if "Data" in updated.columns:
-            def fix_date(x):
-                if pd.isna(x) or str(x).strip().lower() in ["", "none", "nan", "nat"]:
-                    return datetime.now().strftime("%Y-%m-%d %H:%M")
-                if isinstance(x, pd.Timestamp):
-                    return x.to_pydatetime().strftime("%Y-%m-%d %H:%M")
-                if isinstance(x, datetime):
-                    return x.strftime("%Y-%m-%d %H:%M")
-                if isinstance(x, str):
-                    # primo tentativo: formato comune europeo o ISO
-                    try:
-                        parsed = pd.to_datetime(
-                            x,
-                            errors="coerce",
-                            dayfirst=True,
-                            infer_datetime_format=True
-                        )
-                        if pd.notna(parsed):
-                            return parsed.strftime("%Y-%m-%d %H:%M")
-                    except Exception:
-                        pass
-                    # secondo tentativo: caso invertito anno-giorno-mese
-                    try:
-                        parsed = pd.to_datetime(
-                            x,
-                            format="%Y-%d-%m %H:%M",
-                            errors="coerce"
-                        )
-                        if pd.notna(parsed):
-                            return parsed.strftime("%Y-%m-%d %H:%M")
-                    except Exception:
-                        pass
-                # fallback finale: data e ora attuale
-                return datetime.now().strftime("%Y-%m-%d %H:%M")
+            updated["Data"] = updated["Data"].apply(
+                lambda x: x.strftime("%Y-%d-%m %H:%M") if pd.notna(x) else ""
+            )
 
-            updated["Data"] = updated["Data"].apply(fix_date)
-
-        # 🔹 Conversione sicura per i numeri
+        # Conversione numerica sicura
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Salvataggio finale (riscrive tutto in un colpo solo)
+        # Scrittura sullo Sheet
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna i dati in memoria
+        # Ricarica in cache
         st.session_state.df_att = load_data(sheet)
 
-        st.success("✅ Dati sincronizzati correttamente e date uniformi.")
+        st.success("✅ Dati salvati correttamente (formato %Y-%d-%m).")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
-
 
 
 
@@ -1325,6 +1283,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
