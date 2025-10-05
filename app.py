@@ -73,54 +73,82 @@ def load_data(sheet):
 
 
 def save_data(sheet, df):
-    """Salva i dati mantenendo il formato anno-giorno-mese senza perdere righe."""
     try:
-        # 🔹 Legge i dati correnti
+        # 🔹 Legge sempre la versione più aggiornata del foglio
         existing_data = pd.DataFrame(sheet.get_all_records())
 
+        # 🔹 Se il foglio è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            updated = existing_data.copy()
+            # 🔹 Mantiene solo le righe presenti nel DataFrame locale (gestisce eliminazioni)
+            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
 
-            # 🔹 Per ogni riga del df: aggiorna o aggiunge
+            # 🔹 Aggiorna o aggiunge le righe
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
-                    # Aggiorna solo i campi modificati
                     for col in df.columns:
                         updated.loc[mask, col] = row[col]
                 else:
-                    # Aggiunge nuova riga
+                    # Se è una nuova riga, la aggiunge
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione coerente della Data (anno-giorno-mese)
+        # ✅ Conversione robusta e coerente della colonna Data
         if "Data" in updated.columns:
-            def format_date(x):
-                try:
-                    parsed = pd.to_datetime(str(x), errors="coerce")
-                    if pd.notna(parsed):
-                        return parsed.strftime("%Y-%d-%m %H:%M")
-                except Exception:
-                    pass
-                return ""
-            updated["Data"] = updated["Data"].apply(format_date)
+            def fix_date(x):
+                if pd.isna(x) or str(x).strip().lower() in ["", "none", "nan", "nat"]:
+                    return datetime.now().strftime("%Y-%m-%d %H:%M")
+                if isinstance(x, pd.Timestamp):
+                    return x.to_pydatetime().strftime("%Y-%m-%d %H:%M")
+                if isinstance(x, datetime):
+                    return x.strftime("%Y-%m-%d %H:%M")
+                if isinstance(x, str):
+                    # primo tentativo: formato comune europeo o ISO
+                    try:
+                        parsed = pd.to_datetime(
+                            x,
+                            errors="coerce",
+                            dayfirst=True,
+                            infer_datetime_format=True
+                        )
+                        if pd.notna(parsed):
+                            return parsed.strftime("%Y-%m-%d %H:%M")
+                    except Exception:
+                        pass
+                    # secondo tentativo: caso invertito anno-giorno-mese
+                    try:
+                        parsed = pd.to_datetime(
+                            x,
+                            format="%Y-%d-%m %H:%M",
+                            errors="coerce"
+                        )
+                        if pd.notna(parsed):
+                            return parsed.strftime("%Y-%m-%d %H:%M")
+                    except Exception:
+                        pass
+                # fallback finale: data e ora attuale
+                return datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        # 🔹 Conversione numerica sicura
+            updated["Data"] = updated["Data"].apply(fix_date)
+
+        # 🔹 Conversione sicura per i numeri
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Scrittura sicura
+        # 🔹 Salvataggio finale (riscrive tutto in un colpo solo)
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna la cache locale
+        # 🔄 Aggiorna i dati in memoria
         st.session_state.df_att = load_data(sheet)
-        st.success("✅ Tutti i dati salvati e mantenuti correttamente.")
+
+        st.success("✅ Dati sincronizzati correttamente e date uniformi.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
+
 
 
 
@@ -1297,6 +1325,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
