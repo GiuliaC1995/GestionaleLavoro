@@ -99,10 +99,14 @@ def save_data(sheet, df):
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
+        # 🔄 Ricarica i dati aggiornati in memoria (evita ritorno alle date vecchie)
+        st.session_state.df_att = load_data(sheet)
+
         st.success("✅ Dati sincronizzati correttamente.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
+
 
     
 def append_data(sheet, new_row_df):
@@ -702,6 +706,9 @@ if st.session_state.ruolo == "utente":
                 st.success("✅ Attività eliminata con successo!")
                 # Resetto il flag così non rimane sempre
                 st.session_state.attivita_eliminata = False
+                
+            st.session_state.df_att = load_data(st.session_state.sheet)
+    
 
                     
     # ---------- ELENCO ----------
@@ -1272,6 +1279,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
