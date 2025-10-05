@@ -49,13 +49,30 @@ def load_data(sheet):
             "Note","Ore","Minuti","NumCampioni","TipoMalattia","NumReferti","TipoMalattiaRef"
         ])
     if "Data" in df.columns:
-        # ✅ Conversione tollerante: riconosce formati ISO e europei
-        df["Data"] = pd.to_datetime(
-            df["Data"],
-            errors="coerce",
-            dayfirst=True,
-            infer_datetime_format=True
-        )
+    # ✅ Conversione robusta: interpreta sia YYYY-DD-MM che YYYY-MM-DD
+        def parse_mixed_date(x):
+            if pd.isna(x) or str(x).strip().lower() in ["", "nan", "none", "nat"]:
+                return pd.NaT
+            if isinstance(x, datetime):
+                return x
+            try:
+                # primo tentativo: formato corretto ISO (anno-mese-giorno)
+                return pd.to_datetime(x, format="%Y-%m-%d %H:%M", errors="coerce")
+            except Exception:
+                pass
+            try:
+                # secondo tentativo: vecchio formato invertito (anno-giorno-mese)
+                return pd.to_datetime(x, format="%Y-%d-%m %H:%M", errors="coerce")
+            except Exception:
+                pass
+            try:
+                # fallback: parsing automatico
+                return pd.to_datetime(x, errors="coerce", dayfirst=True)
+            except Exception:
+                return pd.NaT
+
+    df["Data"] = df["Data"].apply(parse_mixed_date)
+
     for col in ["Ore","Minuti","NumCampioni","NumReferti"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -1299,6 +1316,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
