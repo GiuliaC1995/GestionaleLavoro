@@ -73,23 +73,28 @@ def load_data(sheet):
 
 
 def save_data(sheet, df):
-    """Salva i dati mantenendo il formato anno-giorno-mese coerente."""
+    """Salva i dati mantenendo il formato anno-giorno-mese senza perdere righe."""
     try:
+        # 🔹 Legge i dati correnti
         existing_data = pd.DataFrame(sheet.get_all_records())
 
         if existing_data.empty:
             updated = df.copy()
         else:
-            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
+            updated = existing_data.copy()
+
+            # 🔹 Per ogni riga del df: aggiorna o aggiunge
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
+                    # Aggiorna solo i campi modificati
                     for col in df.columns:
                         updated.loc[mask, col] = row[col]
                 else:
+                    # Aggiunge nuova riga
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione coerente nel formato anno-giorno-mese
+        # ✅ Conversione coerente della Data (anno-giorno-mese)
         if "Data" in updated.columns:
             def format_date(x):
                 try:
@@ -101,22 +106,21 @@ def save_data(sheet, df):
                 return ""
             updated["Data"] = updated["Data"].apply(format_date)
 
-        # Conversione numerica sicura
+        # 🔹 Conversione numerica sicura
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Salva tutto
+        # 🔹 Scrittura sicura
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna cache locale
+        # 🔄 Aggiorna la cache locale
         st.session_state.df_att = load_data(sheet)
-        st.success("✅ Dati salvati correttamente.")
+        st.success("✅ Tutti i dati salvati e mantenuti correttamente.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
-
 
 
 
@@ -1293,6 +1297,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
