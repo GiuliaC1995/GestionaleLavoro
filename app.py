@@ -129,15 +129,6 @@ def append_data(sheet, new_row_df):
         st.error(f"❌ Errore durante l'inserimento: {e}")
 
 
-def sync_now():
-    try:
-        # 🔹 Ricarica sempre i dati reali prima di sincronizzare
-        st.session_state.df_att = load_data(st.session_state.sheet)
-        save_data(st.session_state.sheet, st.session_state.df_att)
-        st.success("✅ Dati sincronizzati su Google Sheets.")
-    except Exception as e:
-        st.error(f"❌ Errore sincronizzazione: {e}")
-
 # =====================================
 # Config stile app
 # =====================================
@@ -1280,11 +1271,9 @@ elif st.session_state.ruolo == "capo":
 # =====================================
 st.sidebar.markdown("---")
 
-if st.sidebar.button("🔄 Sincronizza adesso", key="sync_common"):
-    sync_now()
-
 if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
