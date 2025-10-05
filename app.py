@@ -110,13 +110,23 @@ def save_data(sheet, df):
 
     
 def append_data(sheet, new_row_df):
-    # Se manca la data, la aggiunge automaticamente
-    if "Data" in new_row_df.columns and pd.isna(new_row_df.loc[0, "Data"]):
-        new_row_df.loc[0, "Data"] = datetime.now()
+    try:
+        # Se manca la data, la aggiunge automaticamente
+        if "Data" in new_row_df.columns and pd.isna(new_row_df.loc[0, "Data"]):
+            new_row_df.loc[0, "Data"] = datetime.now()
 
-    # Aggiunge la nuova riga
-    new_row = new_row_df.astype(str).values.tolist()[0]
-    sheet.append_row(new_row)
+        # Aggiunge la nuova riga
+        new_row = new_row_df.astype(str).values.tolist()[0]
+        sheet.append_row(new_row)
+
+        # 🔄 Subito dopo, ricarica tutto lo sheet per mantenere sincronizzazione
+        st.session_state.df_att = load_data(sheet)
+
+        st.success("✅ Nuova attività aggiunta e dati aggiornati correttamente.")
+    
+    except Exception as e:
+        st.error(f"❌ Errore durante l'inserimento: {e}")
+
 
 def sync_now():
     try:
@@ -1279,6 +1289,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
