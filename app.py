@@ -579,9 +579,14 @@ if st.session_state.ruolo == "utente":
                         "NumReferti": num_referti,
                         "TipoMalattiaRef": tipo_malattia_ref
                     }])
-                    st.session_state.df_att = pd.concat([st.session_state.df_att, new_row], ignore_index=True)
                     try:
+                        # 🔹 Aggiunge direttamente sullo sheet e ricarica subito tutti i dati aggiornati
                         append_data(st.session_state.sheet, new_row)
+
+                        # 🔄 Ricarica i dati aggiornati dallo sheet in memoria
+                        st.session_state.df_att = load_data(st.session_state.sheet)
+
+                        st.success("✅ Attività salvata correttamente!")
                     except Exception as e:
                         st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
 
@@ -1276,4 +1281,5 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
