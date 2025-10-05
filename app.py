@@ -57,45 +57,14 @@ def load_data(sheet):
 
 def save_data(sheet, df):
     try:
-        # 🔹 Legge i dati correnti dal foglio
+        # 🔹 Legge i dati correnti dal foglio (solo per sicurezza, ma non fa più merge)
         existing_data = pd.DataFrame(sheet.get_all_records())
 
-        # 🔹 Se il foglio è vuoto, salva tutto
+        # 🔹 Se il foglio è vuoto, prepara direttamente i dati da salvare
         if existing_data.empty:
-            if "Data" in df.columns:
-                def fix_date_first(x):
-                    if pd.isna(x) or str(x).strip().lower() in ["", "nat", "none", "nan"]:
-                        return datetime.now().isoformat(sep=" ")
-                    elif isinstance(x, datetime):
-                        return x.isoformat(sep=" ")
-                    elif isinstance(x, pd.Timestamp):
-                        return x.to_pydatetime().isoformat(sep=" ")
-                    else:
-                        return str(x).strip()
-                df["Data"] = df["Data"].apply(fix_date_first)
-
-            sheet.clear()
-            sheet.update([df.columns.tolist()] + df.astype(str).values.tolist())
-            return
-
-        # 🔹 Allinea le colonne
-        for col in df.columns:
-            if col not in existing_data.columns:
-                existing_data[col] = ""
-
-        existing_data["ID"] = pd.to_numeric(existing_data["ID"], errors="coerce")
-        df["ID"] = pd.to_numeric(df["ID"], errors="coerce")
-
-        updated = existing_data.copy()
-
-        # 🔹 Aggiorna o aggiunge righe in base all'ID
-        for _, row in df.iterrows():
-            mask = updated["ID"] == row["ID"]
-            if mask.any():
-                for col in df.columns:
-                    updated.loc[mask, col] = row[col]
-            else:
-                updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
+            updated = df.copy()
+        else:
+            updated = df.copy()
 
         # ✅ Conversione sicura e coerente della colonna Data
         if "Data" in updated.columns:
@@ -110,9 +79,16 @@ def save_data(sheet, df):
                     return str(x).strip()
             updated["Data"] = updated["Data"].apply(fix_date)
 
-        # 🔹 Salvataggio finale (una sola scrittura)
+        # 🔹 Conversione di sicurezza per i numeri (evita errori con 'nan' o None)
+        for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
+            if col in updated.columns:
+                updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
+
+        # 🔹 Salvataggio finale (riscrive tutto il foglio per mantenere coerenza)
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
+
+        st.success("✅ Dati salvati correttamente su Google Sheets.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
@@ -1285,6 +1261,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
