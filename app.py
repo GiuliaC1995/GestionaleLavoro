@@ -43,100 +43,90 @@ def save_utenti(ws, df):
 def load_data(sheet):
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
+
     if df.empty:
         df = pd.DataFrame(columns=[
-            "ID","NomeUtente","Data","MacroAttivita","Tipologia","Attivita",
-            "Note","Ore","Minuti","NumCampioni","TipoMalattia","NumReferti","TipoMalattiaRef"
+            "ID", "NomeUtente", "Data", "MacroAttivita", "Tipologia", "Attivita",
+            "Note", "Ore", "Minuti", "NumCampioni", "TipoMalattia", "NumReferti", "TipoMalattiaRef"
         ])
+
+    # ✅ Parsing robusto della colonna Data
     if "Data" in df.columns:
-    # ✅ Conversione robusta: interpreta sia YYYY-DD-MM che YYYY-MM-DD
         def parse_mixed_date(x):
             if pd.isna(x) or str(x).strip().lower() in ["", "nan", "none", "nat"]:
                 return pd.NaT
-            if isinstance(x, datetime):
-                return x
+            s = str(x).lstrip("'").strip()  # Rimuove eventuale apostrofo protettivo
             try:
-                # primo tentativo: formato corretto ISO (anno-mese-giorno)
-                return pd.to_datetime(x, format="%Y-%m-%d %H:%M", errors="coerce")
-            except Exception:
-                pass
-            try:
-                # secondo tentativo: vecchio formato invertito (anno-giorno-mese)
-                return pd.to_datetime(x, format="%Y-%d-%m %H:%M", errors="coerce")
-            except Exception:
-                pass
-            try:
-                # fallback: parsing automatico
-                return pd.to_datetime(x, errors="coerce", dayfirst=True)
+                return pd.to_datetime(
+                    s, errors="coerce", dayfirst=True, infer_datetime_format=True
+                )
             except Exception:
                 return pd.NaT
 
-    df["Data"] = df["Data"].apply(parse_mixed_date)
+        df["Data"] = df["Data"].apply(parse_mixed_date)
 
-    for col in ["Ore","Minuti","NumCampioni","NumReferti"]:
+    # Conversione numeri
+    for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
     return df
 
 
 def save_data(sheet, df):
     try:
-        # 🔹 Legge la versione più recente dallo sheet
+        # 🔹 Ricarica versione più recente per sicurezza
         existing_data = pd.DataFrame(sheet.get_all_records())
 
-        # Se è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            updated = existing_data.copy()
+            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
 
+            # 🔹 Aggiorna o aggiunge righe nuove
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
-
                 if mask.any():
-                    # ✅ Aggiorna solo se la riga è diversa
                     for col in df.columns:
-                        old_val = str(updated.loc[mask, col].values[0])
-                        new_val = str(row[col])
-                        if old_val != new_val:
-                            updated.loc[mask, col] = new_val
+                        updated.loc[mask, col] = row[col]
                 else:
-                    # Nuova riga → la aggiunge
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-            # 🔹 Mantiene solo le righe ancora presenti nel df (gestisce eliminazioni)
-            updated = updated[updated["ID"].isin(df["ID"])].copy()
-
-        # ✅ Conversione coerente solo per le righe nuove o modificate
+        # ✅ Conversione coerente della colonna Data (YYYY-MM-DD HH:MM)
         if "Data" in updated.columns:
-            def normalize_date(x):
-                if pd.isna(x) or str(x).strip().lower() in ["", "none", "nan", "nat"]:
-                    return datetime.now().strftime("%Y-%m-%d %H:%M")
-                if isinstance(x, (pd.Timestamp, datetime)):
+            def fix_date(x):
+                if isinstance(x, pd.Timestamp):
+                    return x.strftime("%Y-%m-%d %H:%M")
+                if isinstance(x, datetime):
                     return x.strftime("%Y-%m-%d %H:%M")
                 if isinstance(x, str):
                     try:
-                        parsed = pd.to_datetime(x, errors="coerce", dayfirst=True, infer_datetime_format=True)
+                        parsed = pd.to_datetime(x, errors="coerce", dayfirst=True)
                         if pd.notna(parsed):
                             return parsed.strftime("%Y-%m-%d %H:%M")
                     except Exception:
                         pass
+                    return x.strip()
                 return datetime.now().strftime("%Y-%m-%d %H:%M")
 
-            updated["Data"] = updated["Data"].apply(normalize_date)
+            updated["Data"] = updated["Data"].apply(fix_date)
 
-        # 🔹 Conversione sicura per i numeri
+            # 🔹 Protegge la colonna da reinterpretazioni di Google Sheets
+            updated["Data"] = updated["Data"].apply(lambda x: f"'{x}")
+
+        # ✅ Conversione sicura numeri
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Riscrive solo se c’è stata una modifica effettiva
+        # 🔹 Scrive sul foglio
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna i dati in memoria
+        # 🔄 Aggiorna cache locale
         st.session_state.df_att = load_data(sheet)
-        st.success("✅ Dati aggiornati correttamente senza alterare le altre date.")
+
+        st.success("✅ Dati sincronizzati correttamente (date protette).")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
@@ -1316,6 +1306,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
