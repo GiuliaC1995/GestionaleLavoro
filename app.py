@@ -49,63 +49,67 @@ def load_data(sheet):
             "Note","Ore","Minuti","NumCampioni","TipoMalattia","NumReferti","TipoMalattiaRef"
         ])
     if "Data" in df.columns:
-        df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
+        # ✅ Conversione tollerante: riconosce formati ISO e europei
+        df["Data"] = pd.to_datetime(
+            df["Data"],
+            errors="coerce",
+            dayfirst=True,
+            infer_datetime_format=True
+        )
     for col in ["Ore","Minuti","NumCampioni","NumReferti"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
+
 def save_data(sheet, df):
     try:
-        # 🔹 Prima ricarica la versione più recente dallo sheet
         existing_data = pd.DataFrame(sheet.get_all_records())
 
-        # 🔹 Se il foglio è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            # 🔹 Mantiene solo le righe che esistono ancora nel df (gestisce eliminazioni)
             updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
-
-            # 🔹 Aggiorna i valori modificati
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
                     for col in df.columns:
                         updated.loc[mask, col] = row[col]
                 else:
-                    # Se è una nuova riga, la aggiunge
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione sicura e coerente della colonna Data
+        # ✅ Conversione robusta della colonna Data
         if "Data" in updated.columns:
             def fix_date(x):
-                if pd.isna(x) or str(x).strip().lower() in ["", "nat", "none", "nan"]:
-                    return datetime.now().isoformat(sep=" ")
-                elif isinstance(x, datetime):
-                    return x.isoformat(sep=" ")
-                elif isinstance(x, pd.Timestamp):
+                if isinstance(x, pd.Timestamp):
                     return x.to_pydatetime().isoformat(sep=" ")
-                else:
-                    return str(x).strip()
+                if isinstance(x, datetime):
+                    return x.isoformat(sep=" ")
+                if isinstance(x, str):
+                    try:
+                        parsed = pd.to_datetime(x, errors="coerce", dayfirst=True, infer_datetime_format=True)
+                        if pd.notna(parsed):
+                            return parsed.to_pydatetime().isoformat(sep=" ")
+                    except Exception:
+                        pass
+                    return x.strip()
+                return datetime.now().isoformat(sep=" ")
+
             updated["Data"] = updated["Data"].apply(fix_date)
 
-        # 🔹 Conversione di sicurezza per i numeri
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Scrive sul foglio (tutto aggiornato)
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Ricarica i dati aggiornati in memoria
         st.session_state.df_att = load_data(sheet)
-
         st.success("✅ Dati sincronizzati correttamente.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
+
 
 
 def append_data(sheet, new_row_df):
@@ -1281,5 +1285,6 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
