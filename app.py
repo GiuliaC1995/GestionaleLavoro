@@ -41,49 +41,49 @@ def save_utenti(ws, df):
     ws.update([df.columns.tolist()] + df.astype(str).values.tolist())
 
 def load_data(sheet):
+    """Carica i dati da Google Sheets e normalizza le date nel formato ISO."""
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
 
     if df.empty:
         df = pd.DataFrame(columns=[
-            "ID", "NomeUtente", "Data", "MacroAttivita", "Tipologia", "Attivita",
-            "Note", "Ore", "Minuti", "NumCampioni", "TipoMalattia", "NumReferti", "TipoMalattiaRef"
+            "ID","NomeUtente","Data","MacroAttivita","Tipologia","Attivita",
+            "Note","Ore","Minuti","NumCampioni","TipoMalattia","NumReferti","TipoMalattiaRef"
         ])
+        return df
 
-    # ✅ Parsing robusto della colonna Data
+    # ✅ Conversione robusta della colonna Data (solo formato ISO)
     if "Data" in df.columns:
-        def parse_mixed_date(x):
-            if pd.isna(x) or str(x).strip().lower() in ["", "nan", "none", "nat"]:
+        def parse_iso_date(x):
+            if pd.isna(x) or str(x).strip() == "":
                 return pd.NaT
-            s = str(x).lstrip("'").strip()  # Rimuove eventuale apostrofo protettivo
             try:
-                return pd.to_datetime(
-                    s, errors="coerce", dayfirst=True, infer_datetime_format=True
-                )
+                # Rimuove eventuali apostrofi e converte forzando il formato ISO
+                x = str(x).strip().lstrip("'")
+                return pd.to_datetime(x, format="%Y-%m-%d %H:%M", errors="coerce")
             except Exception:
                 return pd.NaT
 
-        df["Data"] = df["Data"].apply(parse_mixed_date)
+        df["Data"] = df["Data"].apply(parse_iso_date)
 
-    # Conversione numeri
-    for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
+    # Conversione numerica sicura
+    for col in ["Ore","Minuti","NumCampioni","NumReferti"]:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
 
     return df
 
 
 def save_data(sheet, df):
+    """Salva i dati su Google Sheets mantenendo il formato data coerente (ISO)."""
     try:
-        # 🔹 Ricarica versione più recente per sicurezza
         existing_data = pd.DataFrame(sheet.get_all_records())
 
         if existing_data.empty:
             updated = df.copy()
         else:
+            # Mantiene solo le righe esistenti, aggiorna o aggiunge le nuove
             updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
-
-            # 🔹 Aggiorna o aggiunge righe nuove
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
                 if mask.any():
@@ -92,41 +92,30 @@ def save_data(sheet, df):
                 else:
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione coerente della colonna Data (YYYY-MM-DD HH:MM)
+        # ✅ Conversione uniforme nel formato ISO "YYYY-MM-DD HH:MM"
         if "Data" in updated.columns:
-            def fix_date(x):
-                if isinstance(x, pd.Timestamp):
-                    return x.strftime("%Y-%m-%d %H:%M")
-                if isinstance(x, datetime):
-                    return x.strftime("%Y-%m-%d %H:%M")
-                if isinstance(x, str):
-                    try:
-                        parsed = pd.to_datetime(x, errors="coerce", dayfirst=True)
-                        if pd.notna(parsed):
-                            return parsed.strftime("%Y-%m-%d %H:%M")
-                    except Exception:
-                        pass
-                    return x.strip()
-                return datetime.now().strftime("%Y-%m-%d %H:%M")
+            def format_iso(x):
+                try:
+                    parsed = pd.to_datetime(str(x), errors="coerce")
+                    if pd.notna(parsed):
+                        return parsed.strftime("%Y-%m-%d %H:%M")
+                except Exception:
+                    pass
+                return ""
+            updated["Data"] = updated["Data"].apply(format_iso)
 
-            updated["Data"] = updated["Data"].apply(fix_date)
-
-            # 🔹 Protegge la colonna da reinterpretazioni di Google Sheets
-            updated["Data"] = updated["Data"].apply(lambda x: f"'{x}")
-
-        # ✅ Conversione sicura numeri
+        # Conversione numerica sicura
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Scrive sul foglio
+        # 🔹 Salvataggio finale
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna cache locale
+        # 🔄 Aggiorna la cache locale
         st.session_state.df_att = load_data(sheet)
-
-        st.success("✅ Dati sincronizzati correttamente (date protette).")
+        st.success("✅ Dati salvati correttamente (formato ISO).")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
@@ -1306,6 +1295,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
