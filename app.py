@@ -63,9 +63,17 @@ def save_data(sheet, df):
         # 🔹 Se il foglio è vuoto, salva tutto
         if existing_data.empty:
             if "Data" in df.columns:
-                df["Data"] = df["Data"].apply(
-                    lambda x: x.isoformat(sep=" ") if pd.notna(x) and not isinstance(x, str) else str(x)
-                )
+                def fix_date_first(x):
+                    if pd.isna(x) or str(x).strip().lower() in ["", "nat", "none", "nan"]:
+                        return datetime.now().isoformat(sep=" ")
+                    elif isinstance(x, datetime):
+                        return x.isoformat(sep=" ")
+                    elif isinstance(x, pd.Timestamp):
+                        return x.to_pydatetime().isoformat(sep=" ")
+                    else:
+                        return str(x).strip()
+                df["Data"] = df["Data"].apply(fix_date_first)
+
             sheet.clear()
             sheet.update([df.columns.tolist()] + df.astype(str).values.tolist())
             return
@@ -89,11 +97,18 @@ def save_data(sheet, df):
             else:
                 updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # 🔹 Conversione sicura delle date
+        # ✅ Conversione sicura e coerente della colonna Data
         if "Data" in updated.columns:
-            updated["Data"] = updated["Data"].apply(
-                lambda x: x.isoformat(sep=" ") if pd.notna(x) and not isinstance(x, str) else str(x)
-            )
+            def fix_date(x):
+                if pd.isna(x) or str(x).strip().lower() in ["", "nat", "none", "nan"]:
+                    return datetime.now().isoformat(sep=" ")
+                elif isinstance(x, datetime):
+                    return x.isoformat(sep=" ")
+                elif isinstance(x, pd.Timestamp):
+                    return x.to_pydatetime().isoformat(sep=" ")
+                else:
+                    return str(x).strip()
+            updated["Data"] = updated["Data"].apply(fix_date)
 
         # 🔹 Salvataggio finale (una sola scrittura)
         sheet.clear()
@@ -1270,6 +1285,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
