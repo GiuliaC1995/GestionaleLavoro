@@ -1284,56 +1284,7 @@ if st.sidebar.button("🔄 Sincronizza adesso", key="sync_common"):
     sync_now()
 
 if st.sidebar.button("🚪 Logout", key="logout_common"):
-    try:
-        sync_now()
-    except:
-        pass
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
