@@ -41,7 +41,7 @@ def save_utenti(ws, df):
     ws.update([df.columns.tolist()] + df.astype(str).values.tolist())
 
 def load_data(sheet):
-    """Carica i dati da Google Sheets e normalizza le date nel formato ISO."""
+    """Carica i dati da Google Sheets e mantiene il formato anno-giorno-mese."""
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
 
@@ -52,19 +52,17 @@ def load_data(sheet):
         ])
         return df
 
-    # ✅ Conversione robusta della colonna Data (solo formato ISO)
+    # ✅ Conversione tollerante in formato anno-giorno-mese
     if "Data" in df.columns:
-        def parse_iso_date(x):
+        def parse_date(x):
             if pd.isna(x) or str(x).strip() == "":
                 return pd.NaT
             try:
-                # Rimuove eventuali apostrofi e converte forzando il formato ISO
-                x = str(x).strip().lstrip("'")
-                return pd.to_datetime(x, format="%Y-%m-%d %H:%M", errors="coerce")
+                return pd.to_datetime(str(x).strip(), format="%Y-%d-%m %H:%M", errors="coerce")
             except Exception:
-                return pd.NaT
+                return pd.to_datetime(str(x).strip(), errors="coerce")
 
-        df["Data"] = df["Data"].apply(parse_iso_date)
+        df["Data"] = df["Data"].apply(parse_date)
 
     # Conversione numerica sicura
     for col in ["Ore","Minuti","NumCampioni","NumReferti"]:
@@ -75,14 +73,13 @@ def load_data(sheet):
 
 
 def save_data(sheet, df):
-    """Salva i dati su Google Sheets mantenendo il formato data coerente (ISO)."""
+    """Salva i dati mantenendo il formato anno-giorno-mese coerente."""
     try:
         existing_data = pd.DataFrame(sheet.get_all_records())
 
         if existing_data.empty:
             updated = df.copy()
         else:
-            # Mantiene solo le righe esistenti, aggiorna o aggiunge le nuove
             updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
             for _, row in df.iterrows():
                 mask = updated["ID"] == row["ID"]
@@ -92,33 +89,34 @@ def save_data(sheet, df):
                 else:
                     updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
-        # ✅ Conversione uniforme nel formato ISO "YYYY-MM-DD HH:MM"
+        # ✅ Conversione coerente nel formato anno-giorno-mese
         if "Data" in updated.columns:
-            def format_iso(x):
+            def format_date(x):
                 try:
                     parsed = pd.to_datetime(str(x), errors="coerce")
                     if pd.notna(parsed):
-                        return parsed.strftime("%Y-%m-%d %H:%M")
+                        return parsed.strftime("%Y-%d-%m %H:%M")
                 except Exception:
                     pass
                 return ""
-            updated["Data"] = updated["Data"].apply(format_iso)
+            updated["Data"] = updated["Data"].apply(format_date)
 
         # Conversione numerica sicura
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Salvataggio finale
+        # 🔹 Salva tutto
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Aggiorna la cache locale
+        # 🔄 Aggiorna cache locale
         st.session_state.df_att = load_data(sheet)
-        st.success("✅ Dati salvati correttamente (formato ISO).")
+        st.success("✅ Dati salvati correttamente.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
+
 
 
 
@@ -1295,6 +1293,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
