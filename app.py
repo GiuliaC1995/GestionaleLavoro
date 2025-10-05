@@ -57,7 +57,7 @@ def load_data(sheet):
 
 def save_data(sheet, df):
     try:
-        # 🔹 Legge SEMPRE la versione più recente dallo sheet
+        # 🔹 Prima ricarica la versione più recente dallo sheet
         existing_data = pd.DataFrame(sheet.get_all_records())
 
         # 🔹 Se il foglio è vuoto, salva tutto
@@ -95,11 +95,11 @@ def save_data(sheet, df):
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Riscrive il foglio completamente (versione coerente e pulita)
+        # 🔹 Scrive sul foglio (tutto aggiornato)
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        # 🔄 Ricarica i dati aggiornati in memoria (evita ritorno alle date vecchie)
+        # 🔄 Ricarica i dati aggiornati in memoria
         st.session_state.df_att = load_data(sheet)
 
         st.success("✅ Dati sincronizzati correttamente.")
@@ -108,28 +108,31 @@ def save_data(sheet, df):
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
 
 
-    
 def append_data(sheet, new_row_df):
     try:
+        # 🔹 Forza prima la ricarica del foglio aggiornato
+        current_df = load_data(sheet)
+
         # Se manca la data, la aggiunge automaticamente
         if "Data" in new_row_df.columns and pd.isna(new_row_df.loc[0, "Data"]):
             new_row_df.loc[0, "Data"] = datetime.now()
 
-        # Aggiunge la nuova riga
-        new_row = new_row_df.astype(str).values.tolist()[0]
-        sheet.append_row(new_row)
+        # Aggiunge la nuova riga in locale
+        current_df = pd.concat([current_df, new_row_df], ignore_index=True)
 
-        # 🔄 Subito dopo, ricarica tutto lo sheet per mantenere sincronizzazione
-        st.session_state.df_att = load_data(sheet)
+        # 🔹 Salva tutto usando la logica di save_data (garantisce coerenza)
+        save_data(sheet, current_df)
 
         st.success("✅ Nuova attività aggiunta e dati aggiornati correttamente.")
-    
+
     except Exception as e:
         st.error(f"❌ Errore durante l'inserimento: {e}")
 
 
 def sync_now():
     try:
+        # 🔹 Ricarica sempre i dati reali prima di sincronizzare
+        st.session_state.df_att = load_data(st.session_state.sheet)
         save_data(st.session_state.sheet, st.session_state.df_att)
         st.success("✅ Dati sincronizzati su Google Sheets.")
     except Exception as e:
@@ -1289,6 +1292,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
