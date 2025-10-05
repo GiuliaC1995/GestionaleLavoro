@@ -57,14 +57,25 @@ def load_data(sheet):
 
 def save_data(sheet, df):
     try:
-        # 🔹 Legge i dati correnti dal foglio (solo per sicurezza, ma non fa più merge)
+        # 🔹 Legge SEMPRE la versione più recente dallo sheet
         existing_data = pd.DataFrame(sheet.get_all_records())
 
-        # 🔹 Se il foglio è vuoto, prepara direttamente i dati da salvare
+        # 🔹 Se il foglio è vuoto, salva tutto
         if existing_data.empty:
             updated = df.copy()
         else:
-            updated = df.copy()
+            # 🔹 Mantiene solo le righe che esistono ancora nel df (gestisce eliminazioni)
+            updated = existing_data[existing_data["ID"].isin(df["ID"])].copy()
+
+            # 🔹 Aggiorna i valori modificati
+            for _, row in df.iterrows():
+                mask = updated["ID"] == row["ID"]
+                if mask.any():
+                    for col in df.columns:
+                        updated.loc[mask, col] = row[col]
+                else:
+                    # Se è una nuova riga, la aggiunge
+                    updated = pd.concat([updated, pd.DataFrame([row])], ignore_index=True)
 
         # ✅ Conversione sicura e coerente della colonna Data
         if "Data" in updated.columns:
@@ -79,16 +90,16 @@ def save_data(sheet, df):
                     return str(x).strip()
             updated["Data"] = updated["Data"].apply(fix_date)
 
-        # 🔹 Conversione di sicurezza per i numeri (evita errori con 'nan' o None)
+        # 🔹 Conversione di sicurezza per i numeri
         for col in ["Ore", "Minuti", "NumCampioni", "NumReferti"]:
             if col in updated.columns:
                 updated[col] = pd.to_numeric(updated[col], errors="coerce").fillna(0).astype(int)
 
-        # 🔹 Salvataggio finale (riscrive tutto il foglio per mantenere coerenza)
+        # 🔹 Riscrive il foglio completamente (versione coerente e pulita)
         sheet.clear()
         sheet.update([updated.columns.tolist()] + updated.astype(str).values.tolist())
 
-        st.success("✅ Dati salvati correttamente su Google Sheets.")
+        st.success("✅ Dati sincronizzati correttamente.")
 
     except Exception as e:
         st.error(f"❌ Errore nel salvataggio su Google Sheets: {e}")
@@ -1261,6 +1272,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
