@@ -287,7 +287,8 @@ macro_tipologia_attivita = {
         "Slide": ["Slide"]
     },
     "RICERCA": {
-        "Articolo scientifico": ["Scrittura", "Revisione", "Sottomissione"]
+        "Articolo scientifico": ["Scrittura", "Revisione", "Sottomissione"],
+        "Riunioni e attività amministrative": ["Riunioni e attività amministrative"]
     }
 }
 
@@ -1304,6 +1305,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
