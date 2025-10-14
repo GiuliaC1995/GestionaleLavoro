@@ -131,23 +131,29 @@ def save_data(sheet, df):
 
 def append_data(sheet, new_row_df):
     try:
-        # 🔹 Forza prima la ricarica del foglio aggiornato
+        # 🔹 Ricarica sempre lo stato aggiornato del foglio
         current_df = load_data(sheet)
 
-        # Se manca la data, la aggiunge automaticamente
+        # 🔒 Evita conflitti di ID duplicati
+        new_row_df = new_row_df[~new_row_df["ID"].isin(current_df["ID"])]
+        if new_row_df.empty:
+            st.warning("⚠️ L'attività non è stata aggiunta perché esiste già un ID uguale.")
+            return
+
+        # Se manca la data, la imposta a ora
         if "Data" in new_row_df.columns and pd.isna(new_row_df.loc[0, "Data"]):
             new_row_df.loc[0, "Data"] = datetime.now()
 
-        # Aggiunge la nuova riga in locale
+        # 🔹 Aggiunge la nuova riga in locale
         current_df = pd.concat([current_df, new_row_df], ignore_index=True)
 
-        # 🔹 Salva tutto usando la logica di save_data (garantisce coerenza)
+        # 🔹 Salva tutto sullo Sheet
         save_data(sheet, current_df)
 
-        st.success("✅ Nuova attività aggiunta e dati aggiornati correttamente.")
-
+        st.success("✅ Nuova attività aggiunta correttamente e dati aggiornati.")
     except Exception as e:
         st.error(f"❌ Errore durante l'inserimento: {e}")
+
 
 
 # =====================================
@@ -588,7 +594,14 @@ if st.session_state.ruolo == "utente":
                 if not (macro_tmp and tipologia_tmp and attivita_tmp):
                     st.error("Seleziona MacroAttività, Tipologia e Attività prima di salvare!")
                 else:
-                    new_id = 1 if st.session_state.df_att.empty else int(pd.to_numeric(st.session_state.df_att["ID"], errors="coerce").fillna(0).max()) + 1
+                    # ✅ Ricarica sempre il foglio aggiornato per calcolare l'ID corretto
+                    df_attuale = load_data(st.session_state.sheet)
+
+                    if df_attuale.empty:
+                        new_id = 1
+                    else:
+                        new_id = int(pd.to_numeric(df_attuale["ID"], errors="coerce").fillna(0).max()) + 1
+
                     new_row = pd.DataFrame([{
                         "ID": new_id,
                         "NomeUtente": st.session_state.username,
@@ -604,6 +617,7 @@ if st.session_state.ruolo == "utente":
                         "NumReferti": num_referti,
                         "TipoMalattiaRef": tipo_malattia_ref
                     }])
+
                     try:
                         # 🔹 Aggiunge direttamente sullo sheet e ricarica subito tutti i dati aggiornati
                         append_data(st.session_state.sheet, new_row)
@@ -615,9 +629,7 @@ if st.session_state.ruolo == "utente":
                     except Exception as e:
                         st.warning(f"Attività salvata localmente ma non su Google Sheets: {e}")
 
-                    st.success("✅ Attività salvata!")
-                    
-                    # 🔄 Reset sicuro: elimino le chiavi dal session_state
+                    # 🔄 Reset sicuro dei campi
                     for key in [
                         "macro_form_tmp", "tipologia_form_tmp", "attivita_form_tmp",
                         "note_tmp", "ore_tmp", "min_tmp",
@@ -627,7 +639,7 @@ if st.session_state.ruolo == "utente":
                         if key in st.session_state:
                             del st.session_state[key]
 
-                    # Ricarico la pagina coi widget puliti
+                    # Ricarica la pagina con i campi puliti
                     st.rerun()
     
 
@@ -1306,6 +1318,7 @@ if st.sidebar.button("🚪 Logout", key="logout_common"):
     st.session_state.username = ""
     st.session_state.ruolo = ""
     st.rerun()
+
 
 
 
